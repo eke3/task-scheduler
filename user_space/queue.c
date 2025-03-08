@@ -1,10 +1,11 @@
 #include "queue.h"
 
 #include <stdlib.h>
+#include <stdio.h>
 
 task_queue_t* create_task_queue() {
     task_queue_t* queue;
-    if ((queue = malloc(sizeof(task_queue_t))) == NULL) {
+    if ((queue = malloc(sizeof(task_queue_t*))) == NULL) {
         return NULL;
     }
     queue->tasks = NULL;
@@ -13,16 +14,16 @@ task_queue_t* create_task_queue() {
 
 resource_queue_t* create_resource_queue() {
     resource_queue_t* queue;
-    if ((queue = malloc(sizeof(resource_queue_t))) == NULL) {
+    if ((queue = malloc(sizeof(resource_queue_t*))) == NULL) {
         return NULL;
     }
     queue->resources = NULL;
     return queue;
 }
 
-int free_task_queue(task_queue_t* queue) {
+void free_task_queue(task_queue_t* queue) {
     if (queue == NULL) {
-        return FAILURE;
+        return;
     }
 
     task_t* task = queue->tasks;
@@ -31,32 +32,31 @@ int free_task_queue(task_queue_t* queue) {
         free(task);
         task = task->next;
     }
-
-    return 0;
+    free(queue);
 }
 
 
-int free_resource_queue(resource_queue_t* queue) {
+void free_resource_queue(resource_queue_t* queue) {
     if (queue == NULL) {
-        return FAILURE;
+        return;
     }
 
     resource_t* resource = queue->resources;
 
     while (resource != NULL) {
+        free(resource->semaphore);
         free(resource);
         resource = resource->next;
     }
-
-    return 0;
+    free(queue);
 }
 
-int is_empty_task(task_queue_t* queue) {
+int has_task(task_queue_t* queue) {
     if (queue == NULL) {
         return FAILURE;
     }
 
-    return queue->tasks == NULL;
+    return (queue->tasks != NULL);
 }
 
 void print_task_queue(task_queue_t* queue) {
@@ -80,7 +80,7 @@ int enqueue_task(task_queue_t* queue, task_t* task) {
         return FAILURE;
     }
 
-    if (!is_empty_task(queue)) {
+    if (has_task(queue)) {
         task_t* current = queue->tasks;
         while (current->next != NULL) {
             current = current->next;
@@ -104,10 +104,13 @@ int enqueue_resource(resource_queue_t* queue, resource_t* resource) {
         }
         current->next = resource;
     } else {
-        if (find_resource(queue, resource->rid) != NULL) {
-            // resource in queue, increment semaphore
-
-
+        resource_t* target_resource = find_resource(queue, resource->rid);
+        if (target_resource != NULL) {
+            // resource in queue already, increment semaphore
+            if (sem_post(target_resource->semaphore) != 0) {
+                perror("sem_post error in enqueue_resource()");
+                return FAILURE;
+            }
         } else {
             queue->resources = resource;
         }
@@ -354,4 +357,60 @@ int unlock_resource(resource_t* resource, resource_queue_t* queue) {
             return FAILURE;
         }
     }
+}
+
+priority_queues_t* create_priority_queues() {
+    priority_queues_t* queues;
+
+    if ((queues = malloc(sizeof(priority_queues_t))) == NULL) {
+        perror("malloc error in create_priority_queues()");
+        return NULL;
+    }
+
+    if ((queues->high_priority_tasks = create_task_queue()) == NULL) {
+        fprintf(stderr, "create_task_queue error in create_priority_queues()\n");
+        return NULL;
+    }
+
+    if ((queues->medium_priority_tasks = create_task_queue()) == NULL) {
+        fprintf(stderr, "create_task_queue error in create_priority_queues()\n");
+        return NULL;
+    }
+
+    if ((queues->low_priority_tasks = create_task_queue()) == NULL) {
+        fprintf(stderr, "create_task_queue error in create_priority_queues()\n");
+        return NULL;
+    }
+
+    return queues;
+}
+
+
+int free_priority_queues(priority_queues_t* queues) {
+    if (queues == NULL) {
+        return FAILURE;
+    }
+
+    free_task_queue(queues->high_priority_tasks);
+    free_task_queue(queues->medium_priority_tasks);
+    free_task_queue(queues->low_priority_tasks);
+    free(queues);
+    return 0;
+}
+
+int to_pqueue(priority_queues_t* queues, task_t* task) {
+    if (queues == NULL || task == NULL) {
+        return FAILURE;
+    }
+
+    switch (task->priority) {
+        case HIGH_PRIORITY:
+            return enqueue_task(queues->high_priority_tasks, task);
+        case MEDIUM_PRIORITY:
+            return enqueue_task(queues->medium_priority_tasks, task);
+        case LOW_PRIORITY:
+            return enqueue_task(queues->low_priority_tasks, task);
+    }
+
+    return FAILURE;
 }
