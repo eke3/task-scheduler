@@ -3,7 +3,7 @@
 #include <stdlib.h>
 #include <stdio.h>
 
-task_queue_t* create_task_queue() {
+task_queue_t* create_task_queue(void) {
     task_queue_t* queue;
     if ((queue = malloc(sizeof(task_queue_t*))) == NULL) {
         return NULL;
@@ -12,7 +12,7 @@ task_queue_t* create_task_queue() {
     return queue;
 }
 
-resource_queue_t* create_resource_queue() {
+resource_queue_t* create_resource_queue(void) {
     resource_queue_t* queue;
     if ((queue = malloc(sizeof(resource_queue_t*))) == NULL) {
         return NULL;
@@ -26,11 +26,13 @@ void free_task_queue(task_queue_t* queue) {
         return;
     }
 
-    task_t* task = queue->tasks;
+    task_t* curr = queue->tasks;
+    task_t* prev = NULL;
 
-    while (task != NULL) {
-        free(task);
-        task = task->next;
+    while (curr != NULL) {
+        prev = curr;
+        curr = curr->next;
+        free(prev);
     }
     free(queue);
 }
@@ -41,12 +43,14 @@ void free_resource_queue(resource_queue_t* queue) {
         return;
     }
 
-    resource_t* resource = queue->resources;
+    resource_t* curr = queue->resources;
+    resource_t* prev = NULL;
 
-    while (resource != NULL) {
-        free(resource->semaphore);
-        free(resource);
-        resource = resource->next;
+    while (curr != NULL) {
+        prev = curr;
+        curr = curr->next;
+        free(prev->semaphore);
+        free(prev);
     }
     free(queue);
 }
@@ -97,24 +101,34 @@ int enqueue_resource(resource_queue_t* queue, resource_t* resource) {
         return FAILURE;
     }
 
-    if (!is_empty_resource(queue)) {
+
+    // check if the resource is already in the queue, if it is increment the semaphore
+
+    // if not, add it
+
+    // if the queue is empty, just addd it
+
+
+    if (queue->resources == NULL) {
+        queue->resources = resource;
+        return 0;
+    }
+
+    resource_t* target_resource = find_resource(queue, resource->rid);
+    if (target_resource != NULL) {
+        // resource in queue already, increment semaphore
+        if (sem_post(target_resource->semaphore) != 0) {
+            perror("sem_post error in enqueue_resource()");
+            return FAILURE;
+        }
+    } else {
         resource_t* current = queue->resources;
         while (current->next != NULL) {
             current = current->next;
         }
         current->next = resource;
-    } else {
-        resource_t* target_resource = find_resource(queue, resource->rid);
-        if (target_resource != NULL) {
-            // resource in queue already, increment semaphore
-            if (sem_post(target_resource->semaphore) != 0) {
-                perror("sem_post error in enqueue_resource()");
-                return FAILURE;
-            }
-        } else {
-            queue->resources = resource;
-        }
     }
+
     return 0;
 }
 
@@ -357,9 +371,11 @@ int unlock_resource(resource_t* resource, resource_queue_t* queue) {
             return FAILURE;
         }
     }
+
+    return 0;
 }
 
-priority_queues_t* create_priority_queues() {
+priority_queues_t* create_priority_queues(void) {
     priority_queues_t* queues;
 
     if ((queues = malloc(sizeof(priority_queues_t))) == NULL) {
@@ -411,6 +427,6 @@ int to_pqueue(priority_queues_t* queues, task_t* task) {
         case LOW_PRIORITY:
             return enqueue_task(queues->low_priority_tasks, task);
     }
-
+    
     return FAILURE;
 }

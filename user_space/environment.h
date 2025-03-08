@@ -3,12 +3,12 @@
 
 #include "queue.h"
 
-priority_queues_t* task_queues;
+extern priority_queues_t* task_queues;
 
-task_queue_t* waiting_tasks;
-task_queue_t* completed_tasks;
+extern task_queue_t* waiting_tasks;
+extern task_queue_t* completed_tasks;
 
-resource_queue_t* resources;
+extern resource_queue_t* resources;
 
 
 

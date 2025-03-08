@@ -6,7 +6,7 @@ extern "C" {
 #endif
 
 
-extern void run_scheduler(void);
+extern int run_scheduler(void);
 
 
 #ifdef __cplusplus

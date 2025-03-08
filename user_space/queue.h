@@ -12,20 +12,19 @@
 #define MEDIUM_PRIORITY 1
 #define LOW_PRIORITY 0
 
+typedef struct resource {
+    int rid;
+    sem_t* semaphore;
+    struct resource* next;
+} resource_t;
 
 typedef struct task {
     int tid;
     int priority;
     int duration;
     resource_t* resources;
-    task_t* next;
+    struct task* next;
 } task_t;
-
-typedef struct resource {
-    int rid;
-    sem_t* semaphore;
-    resource_t* next;
-} resource_t;
 
 typedef struct task_queue {
     task_t* tasks;
