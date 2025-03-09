@@ -4,10 +4,25 @@
 #include <stdlib.h>
 #include <string.h>
 #include <unistd.h>
+#include <pthread.h>
 
 #include "environment.h"
 
+typedef struct thread_arg {
+    task_t* task;
+    task_queue_t* pqueue;
+} thread_arg_t;
+
+typedef struct thread_table {
+    pthread_t threads[1024];
+    int num_threads;
+} thread_table_t;
+
+
+thread_table_t thread_table;
+
 int run_scheduler(void) {
+    thread_table.num_threads = 0;
 
     printf("running scheduler\n");
     printf("there are %s pending tasks\n", (has_pending_tasks()) == 1 ? "" : "no");
@@ -40,6 +55,9 @@ int run_scheduler(void) {
         if (check_waiting() == FAILURE) {
             return FAILURE;
         }
+
+
+        cleanup_thread_table();
         
         break;
 
@@ -51,14 +69,27 @@ int run_scheduler(void) {
     return 0;
 }
 
-int execute_task(task_t* task) {
-    if (task == NULL) {
-        return FAILURE;
+void* thread_execute_task(void* arg) {
+    thread_arg_t* thread_arg = (thread_arg_t*) arg;
+    task_t* task_to_exec = thread_arg->task;
+    task_queue_t* pqueue = thread_arg->pqueue;
+
+
+    if (task_to_exec == NULL) {
+        pthread_exit((void*)FAILURE);
     }
 
-    printf("executing task %d\n", task->tid);
-    return sleep(task->duration); // returns seconds remaining if interrupted, or 0 if completed successfully
-    // return 0;
+    printf("executing task %d\n", task_to_exec->tid);
+    sleep(task_to_exec->duration); // returns seconds remaining if interrupted, or 0 if completed successfully
+
+    // release resources
+    release_resources(task_to_exec, resources);
+    // move to completed queue
+    remove_task(pqueue, task_to_exec->tid);
+    enqueue_task(completed_tasks, task_to_exec);
+
+    free(thread_arg);
+    pthread_exit(NULL);
 }
 
 int process_queue(task_queue_t* queue) {
@@ -128,16 +159,37 @@ int process_queue(task_queue_t* queue) {
             // get task
             task_t* task_to_exec = find_task(queue, successful_tids[k]);
             // execute task
-            if (execute_task(task_to_exec) == FAILURE) {
-                return FAILURE;
-            }
-            // release resources
-            release_resources(task_to_exec, resources);
-            // move to completed queue
-            remove_task(queue, task_to_exec->tid);
-            enqueue_task(completed_tasks, task_to_exec);
+
+
+
+
+            // // Need to use a thread to do this!!!
+
+            // if (execute_task(task_to_exec) == FAILURE) {
+            //     return FAILURE;
+            // }
+            // // release resources
+            // release_resources(task_to_exec, resources);
+            // // move to completed queue
+            // remove_task(queue, task_to_exec->tid);
+            // enqueue_task(completed_tasks, task_to_exec);
+
+            thread_arg_t* thread_arg = malloc(sizeof(thread_arg_t*));
+            thread_arg->task = task_to_exec;
+            thread_arg->pqueue = queue;
+
+            pthread_t thread_id = task_to_exec->tid;
+            pthread_attr_t attr;
+            pthread_attr_init(&attr);
+            pthread_create(&thread_id, &attr, thread_execute_task, thread_arg);
+            append_thread(thread_id);
+            // pthread_join(thread_id, NULL);
         }
         k++;
+    }
+
+    for (int a = 0; a < thread_table.num_threads; a++) {
+        pthread_join(thread_table.threads[a], NULL);
     }
 
     int m = 0;
@@ -172,4 +224,18 @@ int check_waiting(void) {
         curr = curr->next;
     }
     return 0;
+}
+
+void append_thread(pthread_t thread_id) {
+    thread_table.threads[thread_table.num_threads] = thread_id;
+    thread_table.num_threads++;
+}
+
+void cleanup_thread_table(void) {
+    for (int i = 0; i < thread_table.num_threads; i++) {
+        if (thread_table.threads[i] == find_task(completed_tasks, (int)thread_table.threads[i])->tid) {
+            thread_table.threads[i] = 0;
+            thread_table.num_threads--;
+        }
+    }
 }

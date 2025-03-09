@@ -17,11 +17,15 @@ extern "C" {
 
 extern int run_scheduler(void);
 
-extern int execute_task(task_t*);
+extern void* thread_execute_task(void*);
 
 extern int process_queue(task_queue_t*);
 
 extern int check_waiting(void);
+
+extern void append_thread(pthread_t);
+
+extern void cleanup_thread_table(void);
 
 #ifdef __cplusplus
 }
