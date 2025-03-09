@@ -1,5 +1,6 @@
 #include "environment.h"
 
+#include <pthread.h>
 #include <stdio.h>
 
 priority_queues_t* task_queues;
@@ -58,4 +59,21 @@ int has_pending_tasks(void) {
         return 1;
     }
     return 0;
+}
+
+int to_pqueue(task_t* task) {
+    if (task_queues == NULL || task == NULL) {
+        return FAILURE;
+    }
+
+    switch (task->priority) {
+        case HIGH_PRIORITY:
+            return enqueue_task(task_queues->high_priority_tasks, task);
+        case MEDIUM_PRIORITY:
+            return enqueue_task(task_queues->medium_priority_tasks, task);
+        case LOW_PRIORITY:
+            return enqueue_task(task_queues->low_priority_tasks, task);
+    }
+
+    return FAILURE;
 }

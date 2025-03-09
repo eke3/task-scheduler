@@ -22,6 +22,8 @@ extern int tear_down(void);
 
 extern int has_pending_tasks(void);
 
+extern int to_pqueue(task_t*);
+
 
 #ifdef __cplusplus
 }

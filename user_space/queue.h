@@ -8,6 +8,7 @@
 #include <semaphore.h>
 
 #define FAILURE -1
+#define ACQUIRE_FAILURE -2
 #define HIGH_PRIORITY 2
 #define MEDIUM_PRIORITY 1
 #define LOW_PRIORITY 0
@@ -48,6 +49,9 @@ extern "C" {
 
 
 // function prototypes
+extern task_t* create_task(int, int, int, resource_t*);
+extern resource_t* create_resource(int, sem_t*);
+
 extern int enqueue_task(task_queue_t*, task_t*);
 extern int enqueue_resource(resource_queue_t*, resource_t*);
 
@@ -86,7 +90,6 @@ extern void free_task_queue(task_queue_t*);
 extern void free_resource_queue(resource_queue_t*);
 extern int free_priority_queues(priority_queues_t*);
 
-int to_pqueue(priority_queues_t*, task_t*);
 
 
 

@@ -4,6 +4,12 @@
 #include "scheduler.h"
 #include "environment.h"
 
+// priority_queues_t* task_queues;
+
+// task_queue_t* waiting_tasks;
+// task_queue_t* completed_tasks;
+
+// resource_queue_t* resources;
 
 int main() {
     // set up
@@ -19,5 +25,7 @@ int main() {
     }
 
     // tear down
+    // printf("tearing down: exit code %d\n", tear_down());
+    // return 0;
     return tear_down();
 }

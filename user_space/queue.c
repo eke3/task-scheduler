@@ -277,14 +277,14 @@ int acquire_resources(task_t* task, resource_queue_t* queue) {
         }
         resource_t* search_resource;
         if ((search_resource = find_resource(queue, resource->rid)) == NULL) {
-            return FAILURE;
+            return ACQUIRE_FAILURE;
         } else {
             if (sem_getvalue(search_resource->semaphore, &sem_val_2) != 0) {
                 perror("sem_getvalue error in acquire_resources()");
                 return FAILURE;
             }
             if (sem_val_1 > sem_val_2) {
-                return FAILURE;
+                return ACQUIRE_FAILURE;
             }
         }
         resource = resource->next;
@@ -414,19 +414,38 @@ int free_priority_queues(priority_queues_t* queues) {
     return 0;
 }
 
-int to_pqueue(priority_queues_t* queues, task_t* task) {
-    if (queues == NULL || task == NULL) {
-        return FAILURE;
+task_t* create_task(int tid, int priority, int duration, resource_t* resources) {
+    if (tid <= 0 || resources == NULL || priority < LOW_PRIORITY || priority > HIGH_PRIORITY || duration <= 0) {
+        return NULL;
     }
 
-    switch (task->priority) {
-        case HIGH_PRIORITY:
-            return enqueue_task(queues->high_priority_tasks, task);
-        case MEDIUM_PRIORITY:
-            return enqueue_task(queues->medium_priority_tasks, task);
-        case LOW_PRIORITY:
-            return enqueue_task(queues->low_priority_tasks, task);
+    task_t* task;
+
+    if ((task = malloc(sizeof(task_t*))) == NULL) {
+        perror("malloc error in create_task()");
+        return NULL;
+    }    
+
+    task->tid = tid;
+    task->priority = priority;
+    task->duration = duration;
+    task->resources = resources;
+    return task;
+}
+
+resource_t* create_resource(int rid, sem_t* semaphore) {
+    if (rid <= 0 || semaphore == NULL) {
+        return NULL;
     }
-    
-    return FAILURE;
+
+    resource_t* resource;
+
+    if ((resource = malloc(sizeof(resource_t*))) == NULL) {
+        perror("malloc error in create_resource()");
+        return NULL;
+    }
+
+    resource->rid = rid;
+    resource->semaphore = semaphore;
+    return resource;
 }
