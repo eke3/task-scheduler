@@ -47,6 +47,28 @@ int scene_1(void) {
 
     // Set up the scene, populate tasks and resources
 
+    sem_t* semaphore1;
+    sem_init(&semaphore1, 0, 5);
+
+    sem_t* semaphore2;
+    sem_init(&semaphore2, 0, 2);
+
+    sem_t* semaphore3;
+    sem_init(&semaphore3, 0, 8);
+
+    resource_t* resource1 = create_resource(1, semaphore1);
+    resource_t* resource2 = create_resource(2, semaphore2);
+    resource_t* resource3 = create_resource(3, semaphore3);
+
+    
+
+    to_pqueue(task1);
+    to_pqueue(task2);
+    to_pqueue(task3);
+
+    enqueue_resource(resources, resource1);
+    enqueue_resource(resources, resource2);
+    enqueue_resource(resources, resource3);
 
 
     // run scheduler

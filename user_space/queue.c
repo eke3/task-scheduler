@@ -262,6 +262,14 @@ resource_t* find_resource(resource_queue_t* queue, int rid) {
     return NULL;
 }
 
+
+/*
+
+
+    This is NOT going to work. The tasks need to store their required resources in a regular array, not a linked list
+
+
+*/
 int acquire_resources(task_t* task, resource_queue_t* queue) {
     if (task == NULL || queue == NULL) {
         return FAILURE;
@@ -269,6 +277,7 @@ int acquire_resources(task_t* task, resource_queue_t* queue) {
 
     resource_t* resource = task->resources;
 
+    // wont work
     while (resource != NULL) {
         int sem_val_1, sem_val_2;
         if (sem_getvalue(resource->semaphore, &sem_val_1) != 0) {
