@@ -6,7 +6,6 @@
 
 extern priority_queues_t* pqueues;
 extern task_queue_t* waiting_queue;
-extern task_queue_t* completed_queue;
 extern resource_queue_t* resources;
 
 bool are_there_any_uncompleted_tasks_left() {
@@ -135,6 +134,11 @@ bool can_acquire_resources(task_t* task) {
 
 void acquire_resources(task_t* task) {
     if (can_acquire_resources(task)) {
+        if (task->resources == NULL) {
+            // No resources were needed to run this task.
+            return;
+        }
+        
         for (int i = 0; task->resources[i].rid > 0; i++) {
             // get the id and quantity of the resource
             int rid = task->resources[i].rid;

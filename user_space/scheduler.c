@@ -1,18 +1,17 @@
 #include "scheduler.h"
 
 #include <pthread.h>
+#include <stdio.h>
+#include <unistd.h>
+#include <stdlib.h>
 
 extern priority_queues_t* pqueues;
 extern task_queue_t* waiting_queue;
-extern task_queue_t* completed_queue;
 extern resource_queue_t* resources;
-
-pthread_mutex_t lock;
+extern pthread_mutex_t lock;
 
 void execute_task(task_t* task) {
-    printf("Executing task %d\n", task->tid);
     sleep(task->duration);
-    printf("Task %d completed\n", task->tid);
 }
 
 void schedule_tasks() {
@@ -23,49 +22,49 @@ void schedule_tasks() {
         process_waiting_queue();
     }
 }
-// looking at high pqueue:
-// freeze mutex
-// dequeue first task from high pqueue
-// acquire task resources (modifies rqueue)
-// if no resources, enqueue task to wait queue
-// if resources, execute
-// after execution, release task resources
-// enqueue executed task to completed queue
-// unfreeze mutex
-
-// looking at medium pqueue
-// do the same
-
-// looking at low pqueue
-// do the same
 
 void process_pqueue(task_queue_t* pqueue) {
     task_t* task;
 
-    pthread_mutex_init(&lock, NULL); // Lock the mutex.
+    pthread_mutex_lock(&lock); // Lock the mutex.
     while ((task = dequeue_task(pqueue)) != NULL) {
         if (can_acquire_resources(task)) {
             acquire_resources(task);
+            pthread_mutex_unlock(&lock); // Unlock the mutex.
             execute_task(task);
+            pthread_mutex_lock(&lock); // Lock the mutex.
             release_resources(task);
-            enqueue_task(completed_queue, task);
+            free(task->resources);
+            free(task);
         } else {
             enqueue_task(waiting_queue, task);
         }
     }
-    pthread_mutex_destroy(&lock); // Unlock the mutex.
+    pthread_mutex_unlock(&lock); // Unlock the mutex.
 }
 
 void process_waiting_queue() {
-    task_t* task;
-
-    pthread_mutex_init(&lock, NULL); // Lock the mutex.
-    while ((task = dequeue_task(waiting_queue)) != NULL) {
-        if (can_acquire_resources(task)) {
-            to_pqueues(task);
-        } else {
-            enqueue_task(waiting_queue, task);
-        }
+    if (waiting_queue->head == NULL) {
+        // No tasks in the waiting queue.
+        return;
     }
-    pthread_mutex_destroy(&lock); // Unlock the mutex.
+
+    int* ids = calloc(100, sizeof(int)); // ids of waiting tasks that can now acquire resources
+    int count = 0; // number of tasks that can acquire resources.
+
+    pthread_mutex_lock(&lock); // Lock the mutex.
+    task_t* curr = waiting_queue->head;
+    while (curr != NULL) {
+        if (can_acquire_resources(curr)) {
+            ids[count] = curr->tid; // Add the task id to the array if it can acquire resources.
+            count++;
+        }
+        curr = curr->next;
+    }
+
+    for (int i = 0; i < count; i++) {
+        to_pqueues(remove_task(waiting_queue, ids[i]));
+    }
+    pthread_mutex_unlock(&lock); // Unlock the mutex.
+    free(ids);
 }

@@ -5,18 +5,23 @@ VALGRIND_FLAGS = --leak-check=full
 EXTRA_VALGRIND_FLAGS = --show-leak-kinds=all --track-origins=yes -s
 
 TARGET = task_scheduler
-SOURCES = main.c environment.c utils.c queue.c task.c resource.c
+TEST_TARGET = ../tests/user_tests
+SOURCES = main.c environment.c utils.c queue.c task.c resource.c scheduler.c
 OBJECTS = $(SOURCES:.c=.o)
 
-all: $(OBJECTS)
+all: $(OBJECTS) user_tests.o
 	$(CC) $(CFLAGS) $(OBJECTS) -o $(TARGET) $(LDFLAGS)
-	rm -f $(OBJECTS)
+	$(CC) $(CFLAGS) environment.o utils.o queue.o task.o resource.o scheduler.o user_tests.o -o $(TEST_TARGET) $(LDFLAGS)
+	rm -f *.o
 
-main.o: main.c environment.o
+user_tests.o: ../tests/user_tests.c environment.o scheduler.o
+	$(CC) $(CFLAGS) -c ../tests/user_tests.c $(LDFLAGS)
+
+main.o: main.c environment.o scheduler.o
 	$(CC) $(CFLAGS) -c main.c $(LDFLAGS)
 
-# scheduler.o: scheduler.h scheduler.c environment.o
-# 	$(CC) $(CFLAGS) -c scheduler.c $(LDFLAGS)
+scheduler.o: scheduler.h scheduler.c utils.o
+	$(CC) $(CFLAGS) -c scheduler.c $(LDFLAGS)
 
 environment.o: environment.h environment.c utils.o
 	$(CC) $(CFLAGS) -c environment.c $(LDFLAGS)
@@ -33,10 +38,16 @@ task.o: task.h task.c resource.o
 resource.o: resource.h resource.c
 	$(CC) $(CFLAGS) -c resource.c $(LDFLAGS)
 
-.PHONY: run val val_extra clean
+.PHONY: run test val val_test val_extra clean
 
 run:
 	./$(TARGET)
+
+test:
+	./$(TEST_TARGET)
+
+val_test:
+	valgrind $(VALGRIND_FLAGS) ./$(TEST_TARGET)
 
 val:
 	valgrind $(VALGRIND_FLAGS) ./$(TARGET)
@@ -45,4 +56,4 @@ val_extra:
 	valgrind $(VALGRIND_FLAGS) $(EXTRA_VALGRIND_FLAGS) ./$(TARGET)
 
 clean:
-	rm -f $(TARGET) $(OBJECTS) core
+	rm -f $(TARGET) $(TEST_TARGET) *.o core

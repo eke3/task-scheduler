@@ -133,8 +133,10 @@ void enqueue_resource(resource_queue_t* rqueue, resource_t* resource) {
 task_t* dequeue_task(task_queue_t* tqueue) {
     if (tqueue) {
         task_t* task = tqueue->head;
-        tqueue->head = task->next;
-        return task;
+        if (task != NULL) {
+            tqueue->head = task->next;
+            return task;
+        }
     }
     return NULL;
 }
