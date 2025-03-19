@@ -17,3 +17,10 @@ resource_t* create_resource(int rid, sem_t* sem) {
     resource->next = NULL;
     return resource;
 }
+
+sem_t* create_semaphore(int quantity) {
+    sem_t* sem;
+    sem = malloc(sizeof(sem_t));
+    sem_init(sem, 0, quantity);
+    return sem;
+}

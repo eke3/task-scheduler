@@ -78,7 +78,9 @@ void print_rqueue(resource_queue_t* rqueue) {
         resource_t* curr = rqueue->head;
         printf("{\n");
         while (curr != NULL) {
-            printf("Resource ID: %d\n", curr->rid);
+            int quantity;
+            sem_getvalue(curr->sem, &quantity);
+            printf("Resource ID: %d\tQuantity: %d\n", curr->rid, quantity);
             curr = curr->next;
         }
         printf("}\n");

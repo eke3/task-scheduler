@@ -15,6 +15,8 @@ extern "C" {
 
 extern resource_t* create_resource(int rid, sem_t* sem);
 
+extern sem_t* create_semaphore(int quantity);
+
 #ifdef __cplusplus
 }
 #endif

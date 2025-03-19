@@ -43,10 +43,11 @@ extern void enqueue_task(task_queue_t* tqueue, task_t* task);
 extern void enqueue_resource(resource_queue_t* rqueue, resource_t* resource);
 
 // Queue removal functions.
+extern task_t* dequeue_task(task_queue_t* tqueue);
 extern task_t* remove_task(task_queue_t* tqueue, int tid);
 
 // Queue searching functions.
-// extern task_t* find_task(task_queue_t* tqueue, int tid);
+extern task_t* find_task_id(task_queue_t* tqueue, int tid);
 extern resource_t* find_resource_id(resource_queue_t* rqueue, int rid);
 
 

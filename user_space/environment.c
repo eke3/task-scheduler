@@ -21,6 +21,10 @@ void set_up() {
 
 void tear_down() {
     free_priority_queues(pqueues);
+    // free_task_queue(pqueues->high);
+    // free_task_queue(pqueues->medium);
+    // free_task_queue(pqueues->low);
+    // free(pqueues);
     free_task_queue(waiting_queue);
     free_task_queue(completed_queue);
     free_resource_queue(resources);
