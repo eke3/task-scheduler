@@ -1,79 +1,27 @@
 #include "environment.h"
 
-#include <pthread.h>
-#include <stdio.h>
+#include <stdlib.h>
 
-priority_queues_t* task_queues;
-
-task_queue_t* waiting_tasks;
-task_queue_t* completed_tasks;
-
+priority_queues_t* pqueues;
+task_queue_t* waiting_queue;
+task_queue_t* completed_queue;
 resource_queue_t* resources;
 
-int set_up(void) {
-    if ((task_queues = create_priority_queues()) == NULL) {
-        return FAILURE;
+void set_up() {
+    pqueues = create_priority_queues();
+    waiting_queue = create_task_queue();
+    completed_queue = create_task_queue();
+    resources = create_resource_queue();
+
+    if (pqueues == NULL || waiting_queue == NULL || completed_queue == NULL || resources == NULL) {
+        tear_down();
+        exit(EXIT_FAILURE);
     }
-    if ((waiting_tasks = create_task_queue()) == NULL) {
-        return FAILURE;
-    }
-    if ((completed_tasks = create_task_queue()) == NULL) {
-        return FAILURE;
-    }
-    if ((resources = create_resource_queue()) == NULL) {
-        return FAILURE;
-    }
-    return 0;
 }
 
-int tear_down(void) {
-    free_task_queue(waiting_tasks);
-    free_task_queue(completed_tasks);
+void tear_down() {
+    free_priority_queues(pqueues);
+    free_task_queue(waiting_queue);
+    free_task_queue(completed_queue);
     free_resource_queue(resources);
-
-    if (free_priority_queues(task_queues) == FAILURE) {
-        return FAILURE;
-    }
-    return 0;
-}
-
-
-int has_pending_tasks(void) {
-    if (task_queues == NULL || waiting_tasks == NULL) {
-        return FAILURE;
-    }
-    if (task_queues->high_priority_tasks == NULL || task_queues->medium_priority_tasks == NULL || task_queues->low_priority_tasks == NULL) {
-        return FAILURE;
-    }
-
-    if (has_task(task_queues->high_priority_tasks)) {
-        return 1;
-    }
-    if (has_task(task_queues->medium_priority_tasks)) {
-        return 1;
-    }
-    if (has_task(task_queues->low_priority_tasks)) {
-        return 1;
-    }
-    if (has_task(waiting_tasks)) {
-        return 1;
-    }
-    return 0;
-}
-
-int to_pqueue(task_t* task) {
-    if (task_queues == NULL || task == NULL) {
-        return FAILURE;
-    }
-
-    switch (task->priority) {
-        case HIGH_PRIORITY:
-            return enqueue_task(task_queues->high_priority_tasks, task);
-        case MEDIUM_PRIORITY:
-            return enqueue_task(task_queues->medium_priority_tasks, task);
-        case LOW_PRIORITY:
-            return enqueue_task(task_queues->low_priority_tasks, task);
-    }
-
-    return FAILURE;
 }

@@ -1,104 +1,57 @@
 #ifndef QUEUE_H
 #define QUEUE_H
 
+#include "task.h"
 
-// structs, constants, #defines, globals, #includes
-
-
-#include <semaphore.h>
-
-#define FAILURE -1
-#define ACQUIRE_FAILURE -2
-#define HIGH_PRIORITY 2
-#define MEDIUM_PRIORITY 1
-#define LOW_PRIORITY 0
-
-typedef struct resource {
-    int rid;
-    sem_t* semaphore;
-    struct resource* next;
-} resource_t;
-
-typedef struct task {
-    int tid;
-    int priority;
-    int duration;
-    resource_t* resources;
-    struct task* next;
-} task_t;
-
+// Linked list queue for holding tasks.
 typedef struct task_queue {
-    task_t* tasks;
+    task_t* head;
+    task_t* tail;
 } task_queue_t;
 
+// Linked list queue for holding resources.
 typedef struct resource_queue {
-    resource_t* resources;
+    resource_t* head;
+    resource_t* tail;
 } resource_queue_t;
 
+// Struct for holding three task queues of cascading priority.
 typedef struct priority_queues {
-    task_queue_t* high_priority_tasks;
-    task_queue_t* medium_priority_tasks;
-    task_queue_t* low_priority_tasks;
+    task_queue_t* high;
+    task_queue_t* medium;
+    task_queue_t* low;
 } priority_queues_t;
-
-
 
 #ifdef __cplusplus
 extern "C" {
 #endif
 
-
-// function prototypes
-extern task_t* create_task(int, int, int, resource_t*);
-extern resource_t* create_resource(int, sem_t*);
-
-extern int enqueue_task(task_queue_t*, task_t*);
-extern int enqueue_resource(resource_queue_t*, resource_t*);
-
-extern task_t* dequeue_task(task_queue_t*);
-// extern resource_t* dequeue_resource(resource_queue_t* queue);
-
-extern task_t* remove_task(task_queue_t*, int);
-extern resource_t* remove_resource(resource_queue_t*, int);
-
-extern int acquire_resources(task_t*, resource_queue_t*);
-extern int release_resources(task_t*, resource_queue_t*);
-extern int lock_resource(resource_t*, resource_queue_t*);
-extern int unlock_resource(resource_t*, resource_queue_t*);
-
-extern int increase_priority(task_t*);
-
-// extern task_t* peek_task(task_queue_t* queue);
-// extern resource_t* peek_resource(resource_queue_t* queue);
-
-extern int has_task(task_queue_t*);
-// extern int is_empty_resource(resource_queue_t* queue);
-
-// FOR DEBUGGING
-extern void print_task_queue(task_queue_t*);
-extern void print_resource_queue(resource_queue_t*);
-
-extern task_t* find_task(task_queue_t*, int);
-extern resource_t* find_resource(resource_queue_t*, int);
-
-
-// for queues
-extern priority_queues_t* create_priority_queues(void);
+// Queue creation functions.
 extern task_queue_t* create_task_queue(void);
 extern resource_queue_t* create_resource_queue(void);
-extern void free_task_queue(task_queue_t*);
-extern void free_resource_queue(resource_queue_t*);
-extern int free_priority_queues(priority_queues_t*);
+extern priority_queues_t* create_priority_queues(void);
 
 
+// Queue deletion functions.
+extern void free_task_queue(task_queue_t* tqueue);
+extern void free_resource_queue(resource_queue_t* rqueue);
+extern void free_priority_queues(priority_queues_t* pqueues);
+
+
+// Queue insertion functions.
+extern void enqueue_task(task_queue_t* tqueue, task_t* task);
+extern void enqueue_resource(resource_queue_t* rqueue, resource_t* resource);
+
+// Queue removal functions.
+extern task_t* remove_task(task_queue_t* tqueue, int tid);
+
+// Queue searching functions.
+// extern task_t* find_task(task_queue_t* tqueue, int tid);
+extern resource_t* find_resource_id(resource_queue_t* rqueue, int rid);
 
 
 #ifdef __cplusplus
 }
 #endif
 
-
-
-
-
-#endif // QUEUE_H
+#endif
