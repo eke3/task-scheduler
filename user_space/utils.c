@@ -6,12 +6,34 @@
 #include "utils.h"
 
 #include <semaphore.h>
-#include <stdlib.h>
 #include <stdio.h>
+#include <stdlib.h>
 
+extern resource_queue_t* resources;
 extern priority_queues_t* pqueues;
 extern task_queue_t* waiting_queue;
-extern resource_queue_t* resources;
+
+void acquire_resources(task_t* task) {
+    if (can_acquire_resources(task)) {
+        if (task->resources == NULL) {
+            // No resources were needed to run this task.
+            return;
+        }
+        
+        for (int i = 0; task->resources[i].rid > 0; i++) {
+            // Get the ID and quantity of the resource.
+            int rid = task->resources[i].rid;
+            int num_needed;
+            sem_getvalue(task->resources[i].sem, &num_needed);
+
+            // Find the resource in the resource queue using its ID and decrement its resource count.
+            resource_t* resource = find_resource_id(resources, rid);
+            for (int j = 0; j < num_needed; j++) {
+                sem_wait(resource->sem);
+            }
+        }
+    }
+}
 
 bool are_there_any_uncompleted_tasks_left() {
     // Check if there are any tasks in the waiting queue.
@@ -41,60 +63,6 @@ bool are_there_any_uncompleted_tasks_left() {
     }
 
     return false;
-}
-
-void to_pqueues(task_t* task) {
-    if (task) {
-        switch (task->priority) {
-            case HIGH:
-                enqueue_task(pqueues->high, task);
-                break;
-            case MEDIUM:
-                enqueue_task(pqueues->medium, task);
-                break;
-            case LOW:
-                enqueue_task(pqueues->low, task);
-                break;
-        }
-    }
-}
-
-void print_tqueue(task_queue_t* tqueue) {
-    if (tqueue) {
-        task_t* curr = tqueue->head;
-        printf("{\n");
-        while (curr != NULL) {
-            printf("Task ID: %d\n", curr->tid);
-            curr = curr->next;
-        }
-        printf("}\n");
-    }
-}
-
-void print_rqueue(resource_queue_t* rqueue) {
-    if (rqueue){
-        resource_t* curr = rqueue->head;
-        printf("Printing resource queue...\n{\n");
-        while (curr != NULL) {
-            int quantity;
-            sem_getvalue(curr->sem, &quantity);
-            printf("Resource ID: %d\tQuantity: %d\n", curr->rid, quantity);
-            curr = curr->next;
-        }
-        printf("}\n");
-    }
-}
-
-void print_pqueues(priority_queues_t* pqueues) {
-    if (pqueues) {
-        printf("Printing priority queues...\n");
-        printf("High:\n");
-        print_tqueue(pqueues->high);
-        printf("Medium:\n");
-        print_tqueue(pqueues->medium);
-        printf("Low:\n");
-        print_tqueue(pqueues->low);
-    }
 }
 
 bool can_acquire_resources(task_t* task) {
@@ -130,25 +98,41 @@ bool can_acquire_resources(task_t* task) {
     return can_acquire;
 }
 
-void acquire_resources(task_t* task) {
-    if (can_acquire_resources(task)) {
-        if (task->resources == NULL) {
-            // No resources were needed to run this task.
-            return;
-        }
-        
-        for (int i = 0; task->resources[i].rid > 0; i++) {
-            // Get the ID and quantity of the resource.
-            int rid = task->resources[i].rid;
-            int num_needed;
-            sem_getvalue(task->resources[i].sem, &num_needed);
+void print_pqueues(priority_queues_t* pqueues) {
+    if (pqueues) {
+        printf("Printing priority queues...\n");
+        printf("High:\n");
+        print_tqueue(pqueues->high);
+        printf("Medium:\n");
+        print_tqueue(pqueues->medium);
+        printf("Low:\n");
+        print_tqueue(pqueues->low);
+    }
+}
 
-            // Find the resource in the resource queue using its ID and decrement its resource count.
-            resource_t* resource = find_resource_id(resources, rid);
-            for (int j = 0; j < num_needed; j++) {
-                sem_wait(resource->sem);
-            }
+void print_rqueue(resource_queue_t* rqueue) {
+    if (rqueue){
+        resource_t* curr = rqueue->head;
+        printf("Printing resource queue...\n{\n");
+        while (curr != NULL) {
+            int quantity;
+            sem_getvalue(curr->sem, &quantity);
+            printf("Resource ID: %d\tQuantity: %d\n", curr->rid, quantity);
+            curr = curr->next;
         }
+        printf("}\n");
+    }
+}
+
+void print_tqueue(task_queue_t* tqueue) {
+    if (tqueue) {
+        task_t* curr = tqueue->head;
+        printf("{\n");
+        while (curr != NULL) {
+            printf("Task ID: %d\n", curr->tid);
+            curr = curr->next;
+        }
+        printf("}\n");
     }
 }
 
@@ -170,6 +154,22 @@ void release_resources(task_t* task) {
             for (int j = 0; j < num_needed; j++) {
                 sem_post(resource->sem);
             }
+        }
+    }
+}
+
+void to_pqueues(task_t* task) {
+    if (task) {
+        switch (task->priority) {
+            case HIGH:
+                enqueue_task(pqueues->high, task);
+                break;
+            case MEDIUM:
+                enqueue_task(pqueues->medium, task);
+                break;
+            case LOW:
+                enqueue_task(pqueues->low, task);
+                break;
         }
     }
 }

@@ -7,26 +7,17 @@
 
 #include <pthread.h>
 #include <stdio.h>
-#include <unistd.h>
 #include <stdlib.h>
+#include <unistd.h>
 
+extern pthread_mutex_t lock;
+extern resource_queue_t* resources;
 extern priority_queues_t* pqueues;
 extern task_queue_t* waiting_queue;
-extern resource_queue_t* resources;
-extern pthread_mutex_t lock;
 
 void execute_task(task_t* task) {
     // Mimic task execution by sleeping for its duration.
     sleep(task->duration);
-}
-
-void schedule_tasks() {
-    while (are_there_any_uncompleted_tasks_left()) {
-        process_pqueue(pqueues->high);
-        process_pqueue(pqueues->medium);
-        process_pqueue(pqueues->low);
-        process_waiting_queue();
-    }
 }
 
 void process_pqueue(task_queue_t* pqueue) {
@@ -75,6 +66,16 @@ void process_waiting_queue() {
     for (int i = 0; i < count; i++) {
         to_pqueues(remove_task(waiting_queue, ids[i]));
     }
-    pthread_mutex_unlock(&lock);
+    pthread_mutex_unlock(&lock); // Unlock the mutex.
     free(ids);
 }
+
+void schedule_tasks() {
+    while (are_there_any_uncompleted_tasks_left()) {
+        process_pqueue(pqueues->high);
+        process_pqueue(pqueues->medium);
+        process_pqueue(pqueues->low);
+        process_waiting_queue();
+    }
+}
+

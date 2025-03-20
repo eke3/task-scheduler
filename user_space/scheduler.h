@@ -14,13 +14,6 @@ extern "C" {
 // Returns: None.
 extern void execute_task(task_t* task);
 
-// void schedule_tasks()
-// Description: Runs the task scheduler.
-// Preconditions: The environment is set up.
-// Postconditions: Queued tasks are scheduled and run according to their priority.
-// Returns: None.
-extern void schedule_tasks(void);
-
 // void process_pqueue(task_queue_t* pqueue)
 // Description: Processes a priority queue.
 // Preconditions: A valid priority queue pointer is passed as an argument.
@@ -34,6 +27,13 @@ extern void process_pqueue(task_queue_t* pqueue);
 // Postconditions: Waiting tasks are moved to the appropriate queue.
 // Returns: None.
 extern void process_waiting_queue(void);
+
+// void schedule_tasks()
+// Description: Runs the task scheduler.
+// Preconditions: The environment is set up.
+// Postconditions: Queued tasks are scheduled and run according to their priority.
+// Returns: None.
+extern void schedule_tasks(void);
 
 #ifdef __cplusplus
 }

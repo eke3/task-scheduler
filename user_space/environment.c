@@ -5,13 +5,13 @@
 
 #include "environment.h"
 
-#include <stdlib.h>
 #include <pthread.h>
+#include <stdlib.h>
 
+pthread_mutex_t lock; // Mutex for synchronization.
+resource_queue_t* resources; // Queue for existing resources.
 priority_queues_t* pqueues; // Priority queues (HIGH, MEDIUM, LOW).
 task_queue_t* waiting_queue; // Queue for waiting tasks.
-resource_queue_t* resources; // Queue for existing resources.
-pthread_mutex_t lock; // Mutex for synchronization.
 
 void set_up() {
     pqueues = create_priority_queues();
