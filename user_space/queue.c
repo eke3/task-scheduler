@@ -1,8 +1,12 @@
+// File:    queue.c
+// Author:  Eric Ekey
+// Date:    03/19/2025
+// Desc:    This file contains functions for creating, searching, and modifying queues.
+
 #include "queue.h"
 
 #include <stdlib.h>
 
-// Queue creation functions.
 task_queue_t* create_task_queue() {
     task_queue_t* tqueue;
     if ((tqueue = malloc(sizeof(task_queue_t))) == NULL) {
@@ -43,8 +47,6 @@ priority_queues_t* create_priority_queues() {
     return pqueues;
 }
 
-
-// Queue deletion functions.
 void free_task_queue(task_queue_t* tqueue) {
     if (tqueue) {
         task_t* curr = tqueue->head;
@@ -83,12 +85,10 @@ void free_priority_queues(priority_queues_t* pqueues) {
     }
 }
 
-
- // Queue insertion functions.
 void enqueue_task(task_queue_t* tqueue, task_t* task) {
     if (tqueue && task) {
         if (find_task_id(tqueue, task->tid) != NULL) {
-            // task already exists, reject insertion.
+            // Task already exists, reject insertion.
             free(task);
             return;
         }
@@ -128,8 +128,6 @@ void enqueue_resource(resource_queue_t* rqueue, resource_t* resource) {
     }
 }
 
-
-// Queue removal functions.
 task_t* dequeue_task(task_queue_t* tqueue) {
     if (tqueue) {
         task_t* task = tqueue->head;
@@ -165,8 +163,6 @@ task_t* remove_task(task_queue_t* tqueue, int tid) {
     return NULL;
 }
 
-
-// Queue searching functions.
 task_t* find_task_id(task_queue_t* tqueue, int tid) {
     if (tqueue) {
         task_t* curr = tqueue->head;

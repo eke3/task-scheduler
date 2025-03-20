@@ -1,13 +1,17 @@
+// File:    environment.c
+// Author:  Eric Ekey
+// Date:    03/19/2025
+// Desc:    This file contains global variables and functions for initializing and tearing down the scheduler environment.
+
 #include "environment.h"
 
 #include <stdlib.h>
 #include <pthread.h>
 
-priority_queues_t* pqueues;
-task_queue_t* waiting_queue;
-resource_queue_t* resources;
-pthread_mutex_t lock;
-
+priority_queues_t* pqueues; // Priority queues (HIGH, MEDIUM, LOW).
+task_queue_t* waiting_queue; // Queue for waiting tasks.
+resource_queue_t* resources; // Queue for existing resources.
+pthread_mutex_t lock; // Mutex for synchronization.
 
 void set_up() {
     pqueues = create_priority_queues();

@@ -1,3 +1,8 @@
+// File:    scheduler.c
+// Author:  Eric Ekey
+// Date:    03/19/2025
+// Desc:    This file contains functions for executing and scheduling tasks.
+
 #include "scheduler.h"
 
 #include <pthread.h>
@@ -11,6 +16,7 @@ extern resource_queue_t* resources;
 extern pthread_mutex_t lock;
 
 void execute_task(task_t* task) {
+    // Mimic task execution by sleeping for its duration.
     sleep(task->duration);
 }
 
@@ -26,21 +32,23 @@ void schedule_tasks() {
 void process_pqueue(task_queue_t* pqueue) {
     task_t* task;
 
-    pthread_mutex_lock(&lock); // Lock the mutex.
+    pthread_mutex_lock(&lock);
     while ((task = dequeue_task(pqueue)) != NULL) {
         if (can_acquire_resources(task)) {
+            // Task can acquire resources, acquire them and execute it.
             acquire_resources(task);
-            pthread_mutex_unlock(&lock); // Unlock the mutex.
+            pthread_mutex_unlock(&lock);
             execute_task(task);
-            pthread_mutex_lock(&lock); // Lock the mutex.
+            pthread_mutex_lock(&lock);
             release_resources(task);
             free(task->resources);
             free(task);
         } else {
+            // Task cannot acquire resources, add it to the waiting queue.
             enqueue_task(waiting_queue, task);
         }
     }
-    pthread_mutex_unlock(&lock); // Unlock the mutex.
+    pthread_mutex_unlock(&lock);
 }
 
 void process_waiting_queue() {
@@ -49,22 +57,24 @@ void process_waiting_queue() {
         return;
     }
 
-    int* ids = calloc(100, sizeof(int)); // ids of waiting tasks that can now acquire resources
-    int count = 0; // number of tasks that can acquire resources.
+    int* ids = calloc(100, sizeof(int)); // IDs of waiting tasks that can now acquire resources.
+    int count = 0; // Number of tasks that can acquire resources.
 
-    pthread_mutex_lock(&lock); // Lock the mutex.
+    pthread_mutex_lock(&lock);
     task_t* curr = waiting_queue->head;
     while (curr != NULL) {
         if (can_acquire_resources(curr)) {
-            ids[count] = curr->tid; // Add the task id to the array if it can acquire resources.
+            // Task can acquire resources. add its ID to the array.
+            ids[count] = curr->tid;
             count++;
         }
         curr = curr->next;
     }
 
+    // Add the waiting tasks that can acquire resources to appropriate priority queues.
     for (int i = 0; i < count; i++) {
         to_pqueues(remove_task(waiting_queue, ids[i]));
     }
-    pthread_mutex_unlock(&lock); // Unlock the mutex.
+    pthread_mutex_unlock(&lock);
     free(ids);
 }
