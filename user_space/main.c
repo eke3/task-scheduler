@@ -3,8 +3,8 @@
 // Date:    03/19/2025
 // Desc:    This file contains the main function for simulating the scheduler environment.
 
-#define NUM_RESOURCES 20
-#define NUM_TASKS 30
+#define NUM_RESOURCES 20 // Number of resources to make available to the scheduler.
+#define NUM_TASKS 30 // Number of tasks to generate and schedule.
 
 #include <pthread.h>
 #include <stdio.h>
@@ -13,6 +13,7 @@
 #include "environment.h"
 #include "scheduler.h"
 
+extern pthread_mutex_t lock;
 extern priority_queues_t* pqueues;
 extern task_queue_t* waiting_queue;
 extern resource_queue_t* resources;
@@ -106,7 +107,9 @@ void* THREAD_generate_tasks(void* arg) {
         resource_array[1] = resource2;
 
         task_t* task = create_task(task_id, priority, task_duration, resource_array);
+        pthread_mutex_lock(&lock);
         to_pqueues(task);
+        pthread_mutex_unlock(&lock);
         printf("Task %d queued with %s priority\n", task_id, ((priority == HIGH) ? "HIGH" : (priority == MEDIUM) ? "MEDIUM" : "LOW"));
     }
     return NULL;
