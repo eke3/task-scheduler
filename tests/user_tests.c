@@ -18,19 +18,11 @@ void test_synchronization();
 void* create_tasks(void* arg);
 
 int main() {
-    // set_up();
-
     // test_adding_duplicate_resource();
     // test_adding_duplicate_task();
     // test_acquire_resources();
     // test_schedule_tasks();
     // test_synchronization();
-
-
-    // schedule_tasks();
-
-    // tear_down();
-
     return 0;
 }
 
@@ -38,7 +30,6 @@ int main() {
 void test_adding_duplicate_resource() {
     set_up();
 
-    // can populate queues here
     resource_t* resource1 = create_resource(1, create_semaphore(1));
     resource_t* resource2 = create_resource(2, create_semaphore(2));
     resource_t* resource3 = create_resource(3, create_semaphore(3));
@@ -99,7 +90,7 @@ void test_acquire_resources() {
     print_rqueue(resources);
 
     sem_t sem;
-    sem_init(&sem, 0, 2);
+    sem_init(&sem, 0, 1);
     resource_t* resource = calloc(2, sizeof(resource_t));
     resource_t rsrc;
     rsrc.rid = 3;

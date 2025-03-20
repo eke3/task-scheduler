@@ -20,7 +20,8 @@ void acquire_resources(task_t* task) {
             return;
         }
         
-        for (int i = 0; task->resources[i].rid > 0; i++) {
+        size_t num_resources = sizeof(task->resources) / sizeof(task->resources[0]);
+        for (int i = 0; i < num_resources; i++) {
             // Get the ID and quantity of the resource.
             int rid = task->resources[i].rid;
             int num_needed;
@@ -75,7 +76,8 @@ bool can_acquire_resources(task_t* task) {
             return true;
         }
 
-        for (int i = 0; task->resources[i].rid > 0; i++) {
+        size_t num_resources = sizeof(task->resources) / sizeof(task->resources[0]);
+        for (int i = 0; i < num_resources; i++) {
             // Get the ID and quantity of the resource.
             int rid = task->resources[i].rid;
             int num_needed;
@@ -117,7 +119,7 @@ void print_rqueue(resource_queue_t* rqueue) {
         while (curr != NULL) {
             int quantity;
             sem_getvalue(curr->sem, &quantity);
-            printf("Resource ID: %d\tQuantity: %d\n", curr->rid, quantity);
+            printf("\tResource ID: %d\tQuantity: %d\n", curr->rid, quantity);
             curr = curr->next;
         }
         printf("}\n");
@@ -129,7 +131,7 @@ void print_tqueue(task_queue_t* tqueue) {
         task_t* curr = tqueue->head;
         printf("{\n");
         while (curr != NULL) {
-            printf("Task ID: %d\n", curr->tid);
+            printf("\tTask ID: %d\n", curr->tid);
             curr = curr->next;
         }
         printf("}\n");
@@ -143,7 +145,8 @@ void release_resources(task_t* task) {
             return;
         }
 
-        for (int i = 0; task->resources[i].rid > 0; i++) {
+        size_t num_resources = sizeof(task->resources) / sizeof(task->resources[0]);
+        for (int i = 0; i < num_resources; i++) {
             // Get the ID and quantity of the resource.
             int rid = task->resources[i].rid;
             int num_needed;

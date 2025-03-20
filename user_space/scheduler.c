@@ -17,7 +17,9 @@ extern task_queue_t* waiting_queue;
 
 void execute_task(task_t* task) {
     // Mimic task execution by sleeping for its duration.
+    printf("Executing task %d...\n", task->tid);
     sleep(task->duration);
+    printf("Task %d completed\n", task->tid);
 }
 
 void process_pqueue(task_queue_t* pqueue) {
