@@ -16,7 +16,10 @@ typedef struct task {
     task_priority_t priority;
     int duration;
     // Array of task's required resources.
-    resource_t* resources;
+    // Even numbered indexes contain resource ids, odd numbered ids contain quantities required of previous index's resource.
+    int* resources;
+    size_t num_resources;
+    int age;
     struct task* next;
 } task_t;
 
@@ -29,7 +32,7 @@ extern "C" {
 // Preconditions: Valid task parameters are passed as arguments.
 // Postconditions: A new task is created.
 // Returns: A pointer to the created task.
-extern task_t* create_task(int tid, task_priority_t priority, int duration, resource_t* resources);
+extern task_t* create_task(int tid, task_priority_t priority, int duration, int* resources, size_t num_resources);
 
 // void increase_priority(task_t* task)
 // Description: Increases the priority of a task.

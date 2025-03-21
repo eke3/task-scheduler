@@ -5,7 +5,12 @@
 
 #include "queue.h"
 
+#include <pthread.h>
 #include <stdlib.h>
+
+extern pthread_mutex_t pqueues_lock;
+extern pthread_mutex_t waiting_queue_lock;
+extern pthread_mutex_t resources_lock;
 
 priority_queues_t* create_priority_queues() {
     priority_queues_t* pqueues;
@@ -86,6 +91,11 @@ void enqueue_resource(resource_queue_t* rqueue, resource_t* resource) {
 
 void enqueue_task(task_queue_t* tqueue, task_t* task) {
     if (tqueue && task) {
+        if (task->tid <= 0 || task->num_resources < 0) {
+            // Task has ID less than 1 or negative number of resources, reject insertion.
+            free(task);
+            return;
+        }
         if (find_task_id(tqueue, task->tid) != NULL) {
             // Task already exists, reject insertion.
             free(task);

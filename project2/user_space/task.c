@@ -7,8 +7,8 @@
 
 #include <stdlib.h>
 
-task_t* create_task(int tid, task_priority_t priority, int duration, resource_t* resources) {
-    if (tid <=0 || duration <= 0) {
+task_t* create_task(int tid, task_priority_t priority, int duration, int* resources, size_t num_resources) {
+    if (tid <=0 || duration <= 0 || num_resources < 0) {
         return NULL;
     }
 
@@ -21,6 +21,8 @@ task_t* create_task(int tid, task_priority_t priority, int duration, resource_t*
     task->priority = priority;
     task->duration = duration;
     task->resources = resources;
+    task->num_resources = num_resources;
+    task->age = 0;
     task->next = NULL;
     return task;
 }

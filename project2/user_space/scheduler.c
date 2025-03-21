@@ -10,7 +10,9 @@
 #include <stdlib.h>
 #include <unistd.h>
 
-extern pthread_mutex_t lock;
+extern pthread_mutex_t pqueues_lock;
+extern pthread_mutex_t waiting_queue_lock;
+extern pthread_mutex_t resources_lock;
 extern resource_queue_t* resources;
 extern priority_queues_t* pqueues;
 extern task_queue_t* waiting_queue;
@@ -25,59 +27,109 @@ void execute_task(task_t* task) {
 void process_pqueue(task_queue_t* pqueue) {
     task_t* task;
 
-    pthread_mutex_lock(&lock);
     while ((task = dequeue_task(pqueue)) != NULL) {
         if (can_acquire_resources(task)) {
             // Task can acquire resources, acquire them and execute it.
             acquire_resources(task);
-            pthread_mutex_unlock(&lock);
             execute_task(task);
-            pthread_mutex_lock(&lock);
             release_resources(task);
             free(task->resources);
             free(task);
         } else {
             // Task cannot acquire resources, add it to the waiting queue.
+            pthread_mutex_lock(&waiting_queue_lock);
+            printf("Task %d cannot acquire resources, adding to waiting queue\n", task->tid);
             enqueue_task(waiting_queue, task);
+            printf("Task %d added to waiting queue\n", task->tid);
+            print_tqueue(waiting_queue);
+            pthread_mutex_unlock(&waiting_queue_lock);
         }
     }
-    pthread_mutex_unlock(&lock);
 }
 
-void process_waiting_queue() {
+int process_waiting_queue() {
+    printf("***PROCESSING WAITING QUEUE***\n");
+    print_tqueue(waiting_queue);
+    bool tasks_are_old = true;
+
     if (waiting_queue->head == NULL) {
         // No tasks in the waiting queue.
-        return;
+        return tasks_are_old;
     }
 
     int* ids = calloc(100, sizeof(int)); // IDs of waiting tasks that can now acquire resources.
     int count = 0; // Number of tasks that can acquire resources.
 
-    pthread_mutex_lock(&lock);
     task_t* curr = waiting_queue->head;
     while (curr != NULL) {
+        // printf("Task ID: %d, task->resources->sem is NULL: %d, Number of Resources: %ld\n", curr->tid, curr->resources->sem == NULL, curr->num_resources);
+        // int val;
+        // sem_getvalue(curr->resources->sem, &val);
         if (can_acquire_resources(curr)) {
             // Task can acquire resources. add its ID to the array.
             ids[count] = curr->tid;
             count++;
         }
+        curr->age++;
+        if (curr->age > 5) {
+            // EXTRA CREDIT: Task has been waiting for 5 passes, increase priority.
+            increase_priority(curr);
+        }
+        if (curr->age < 10) {
+            tasks_are_old = false;
+        }
         curr = curr->next;
     }
 
-    // Add the waiting tasks that can acquire resources to appropriate priority queues.
-    for (int i = 0; i < count; i++) {
-        to_pqueues(remove_task(waiting_queue, ids[i]));
+    if (count == 0) {
+        // No tasks can acquire resources, move on.
+        printf("No tasks can acquire resources, moving on\n");
+        free(ids);
+        return tasks_are_old;
     }
-    pthread_mutex_unlock(&lock); // Unlock the mutex.
+
+    // Add the waiting tasks that can acquire resources to appropriate priority queues.
+    pthread_mutex_lock(&pqueues_lock);
+    for (int i = 0; i < count; i++) {
+        printf("Task %d can acquire resources, adding to appropriate priority queue\n", ids[i]);
+        task_t* task = remove_task(waiting_queue, ids[i]);
+        task->age = 0;
+        to_pqueues(task);
+        printf("Task %d added to appropriate priority queue\n", ids[i]);
+        print_pqueues(pqueues);
+    }
+    pthread_mutex_unlock(&pqueues_lock); // Unlock the mutex.
     free(ids);
+    return tasks_are_old;
 }
 
 void schedule_tasks() {
-    while (are_there_any_uncompleted_tasks_left()) {
+    int stop_scheduler = 0;
+    while (are_there_any_uncompleted_tasks_left() || are_there_any_waiting_tasks_left()) {
+        printf("run scheduler loop\n");
+        print_pqueues(pqueues);
+        pthread_mutex_lock(&pqueues_lock);
+        pthread_mutex_lock(&resources_lock);
         process_pqueue(pqueues->high);
+        // print_tqueue(pqueues->high);
         process_pqueue(pqueues->medium);
+        // print_tqueue(pqueues->medium);
         process_pqueue(pqueues->low);
-        process_waiting_queue();
+        // print_tqueue(pqueues->low);
+        pthread_mutex_unlock(&pqueues_lock);
+        pthread_mutex_lock(&waiting_queue_lock);
+        stop_scheduler = process_waiting_queue();
+        // pthread_mutex_unlock(&waiting_queue_lock);
+        pthread_mutex_unlock(&resources_lock);
+        printf("end scheduler loop\n");
+
+        if (!are_there_any_uncompleted_tasks_left() && stop_scheduler) {
+            // The only remaining tasks are old and can't acquire resources, stop the scheduler.
+            printf("All tasks are old and can't acquire resources, stopping scheduler\n");
+            pthread_mutex_unlock(&waiting_queue_lock);
+            break;
+        }
+        pthread_mutex_unlock(&waiting_queue_lock);
     }
 }
 

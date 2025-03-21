@@ -26,7 +26,7 @@ extern void process_pqueue(task_queue_t* pqueue);
 // Preconditions: The environment is set up.
 // Postconditions: Waiting tasks are moved to the appropriate queue.
 // Returns: None.
-extern void process_waiting_queue(void);
+extern int process_waiting_queue(void);
 
 // void schedule_tasks()
 // Description: Runs the task scheduler.

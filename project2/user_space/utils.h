@@ -23,6 +23,8 @@ extern void acquire_resources(task_t* task);
 // Returns: True if there are any uncompleted tasks left, false otherwise.
 extern bool are_there_any_uncompleted_tasks_left(void);
 
+extern bool are_there_any_waiting_tasks_left(void);
+
 // bool can_acquire_resources(task_t* task)
 // Description: Checks if a task can acquire the resources it needs.
 // Preconditions: A valid task pointer is passed as an argument.

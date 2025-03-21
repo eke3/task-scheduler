@@ -8,7 +8,7 @@
 extern priority_queues_t* pqueues;
 extern task_queue_t* waiting_queue;
 extern resource_queue_t* resources;
-extern pthread_mutex_t lock;
+pthread_mutex_t test_pqueues_lock;
 
 void test_adding_duplicate_resource();
 void test_adding_duplicate_task();
@@ -49,24 +49,16 @@ void test_adding_duplicate_resource() {
 void test_adding_duplicate_task() {
     set_up();
 
-    sem_t sem;
-    sem_init(&sem, 0, 1);
-    resource_t* resource = calloc(2, sizeof(resource_t));
-    resource_t rsrc;
-    rsrc.rid = 1;
-    rsrc.sem = &sem;
-    rsrc.next = NULL;
-    resource[0] = rsrc;
-    resource_t rsrc2;
-    rsrc2.rid = 0;
-    rsrc2.sem = NULL;
-    rsrc2.next = NULL;
-    resource[1] = rsrc2;
+    int* resource = calloc(4, sizeof(int));
+    resource[0] = 1;
+    resource[1] = 1;
+    resource[2] = 2;
+    resource[3] = 2;
 
-    task_t* task1 = create_task(1, HIGH, 1, resource);
-    task_t* task2 = create_task(2, HIGH, 1, NULL);
-    task_t* task3 = create_task(3, HIGH, 1, NULL);
-    task_t* task4 = create_task(1, HIGH, 1, NULL); // Dupe of task1 should be ignored if put in the same queue
+    task_t* task1 = create_task(1, HIGH, 1, resource, 2);
+    task_t* task2 = create_task(2, HIGH, 1, NULL, 0);
+    task_t* task3 = create_task(3, HIGH, 1, NULL, 0);
+    task_t* task4 = create_task(1, HIGH, 1, NULL, 0); // Dupe of task1 should be ignored if put in the same queue
 
     enqueue_task(pqueues->high, task1);
     enqueue_task(pqueues->high, task2);
@@ -89,15 +81,10 @@ void test_acquire_resources() {
     enqueue_resource(resources, resource3);
     print_rqueue(resources);
 
-    sem_t sem;
-    sem_init(&sem, 0, 1);
-    resource_t* resource = calloc(2, sizeof(resource_t));
-    resource_t rsrc;
-    rsrc.rid = 3;
-    rsrc.sem = &sem;
-    rsrc.next = NULL;
-    resource[0] = rsrc;
-    task_t* task1 = create_task(1, HIGH, 1, resource); // this task will need one of resource 1
+    int* resource = calloc(2, sizeof(int));
+    resource[0] = 1;
+    resource[1] = 1;
+    task_t* task1 = create_task(1, HIGH, 1, resource, 1); // this task will need one of resource 1
     enqueue_task(pqueues->high, task1);
 
     acquire_resources(task1);
@@ -121,55 +108,13 @@ void test_schedule_tasks() {
     print_rqueue(resources);
 
     // enqueue some tasks
-    sem_t sem;
-    sem_init(&sem, 0, 1);
-    resource_t* resource = malloc(2 * sizeof(resource_t));
-    for (int i = 0; i < 2; i++) {
-        resource_t rsr;
-        rsr.rid = 0;
-        resource[i] = rsr;
+    int* resource = malloc(6 * sizeof(int));
+    for (int i = 0; i < 3*2; i=i+2) {
+        resource[i] = i;
+        resource[i+1] = 1;
+        task_t* task = create_task(1, HIGH, 1, resource, 3); // this task will need one of resource 1
+        to_pqueues(task);
     }
-    resource_t rsrc;
-    rsrc.rid = 1;
-    rsrc.sem = &sem;
-    rsrc.next = NULL;
-    resource[0] = rsrc;
-    task_t* task1 = create_task(1, HIGH, 1, resource); // this task will need one of resource 1
-    to_pqueues(task1);
-
-    sem_t sem2;
-    sem_init(&sem2, 0, 2);
-    resource_t* resources2 = malloc(2 * sizeof(resource_t));
-    for (int i = 0; i < 2; i++) {
-        resource_t rsr;
-        rsr.rid = 0;
-        resources2[i] = rsr;
-    }
-    resource_t rsrc2;
-    rsrc2.rid = 3;
-    rsrc2.sem = &sem2;
-    rsrc2.next = NULL;
-    resources2[0] = rsrc2;
-    task_t* task2 = create_task(2, HIGH, 1, resources2); // this task will need two of resource 3
-    to_pqueues(task2);
-
-    sem_t sem3;
-    sem_init(&sem3, 0, 9);
-    resource_t* resources3 = malloc(2 * sizeof(resource_t));
-    for (int i = 0; i < 2; i++) {
-        resource_t rsr;
-        rsr.rid = 0;
-        resources3[i] = rsr;
-    }
-    resource_t rsrc3;
-    rsrc3.rid = 2;
-    rsrc3.sem = &sem3;
-    rsrc3.next = NULL;
-    resources3[0] = rsrc3;
-    task_t* task3 = create_task(3, HIGH, 1, resources3); // this task will need one of resource 2
-    to_pqueues(task3);
-
-    // schedule_tasks();
 
     tear_down();
 }
@@ -187,7 +132,7 @@ void test_synchronization() {
     pthread_join(t2, NULL);
     pthread_join(t3, NULL);
 
-    task_t* waiting_task = create_task(100, LOW, 1, NULL); // Create a new task
+    task_t* waiting_task = create_task(100, LOW, 1, NULL, 0); // Create a new task
     enqueue_task(waiting_queue, waiting_task); // Enqueue the task into the waiting queue
 
 
@@ -201,11 +146,11 @@ void* create_tasks(void* arg) {
     int start_id = *((int*)arg);
     for (int i = start_id; i < start_id + 2; i++) {
         printf("Creating task %d\n", i);
-        task_t* task = create_task(i, ((i % 2 == 0) ? HIGH : MEDIUM), 1, NULL);
-        pthread_mutex_lock(&lock);
+        task_t* task = create_task(i, ((i % 2 == 0) ? HIGH : MEDIUM), 1, NULL, 0);
         printf("Adding task %d to queue\n", i);
+        pthread_mutex_lock(&test_pqueues_lock);
         to_pqueues(task);
-        pthread_mutex_unlock(&lock);
+        pthread_mutex_unlock(&test_pqueues_lock);
     }
     return NULL;
 }

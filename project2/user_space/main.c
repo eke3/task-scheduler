@@ -13,7 +13,9 @@
 #include "environment.h"
 #include "scheduler.h"
 
-extern pthread_mutex_t lock;
+extern pthread_mutex_t pqueues_lock;
+extern pthread_mutex_t waiting_queue_lock;
+extern pthread_mutex_t resources_lock;
 extern priority_queues_t* pqueues;
 extern task_queue_t* waiting_queue;
 extern resource_queue_t* resources;
@@ -84,7 +86,7 @@ void* THREAD_generate_tasks(void* arg) {
     task_priority_t max_priority = HIGH;
 
     // Create NUM_TASKS tasks and inject them into the scheduler.
-    for (int i = 1, j = 0; i <= NUM_TASKS; i++, j++) {
+    for (int i = 1, j = 0; i <= NUM_TASKS/3; i++, j++) {
         if (j > (NUM_RESOURCES-1)) {
             j = 0;
         }
@@ -92,24 +94,18 @@ void* THREAD_generate_tasks(void* arg) {
         int task_id = rand();
         task_priority_t priority = (task_priority_t)(rand() % (max_priority - min_priority + 1)) + min_priority;
         int task_duration = (rand() % 3) + 1; // Task duration between 1 and 3 seconds.
-        resource_t *resource_array = malloc(2 * sizeof(resource_t));
-        resource_t resource1, resource2; // Resources required to run task.
-        sem_t semaphore1, semaphore2;
-        int rsrc1_num_required = (rand() % (max_rsrc - min_rsrc + 1)) + min_rsrc;
-        int rsrc2_num_required = (rand() % (max_rsrc - min_rsrc + 1)) + min_rsrc;
-        sem_init(&semaphore1, 0, rsrc1_num_required);
-        sem_init(&semaphore2, 0, rsrc2_num_required);
-        resource1.rid = j;
-        resource2.rid = j+1;
-        resource1.sem = &semaphore1;
-        resource2.sem = &semaphore2;
-        resource_array[0] = resource1;
-        resource_array[1] = resource2;
 
-        task_t* task = create_task(task_id, priority, task_duration, resource_array);
-        pthread_mutex_lock(&lock);
+        // Resources and quantities required for a task. ( [resource_id, quantity, resource_id, quantity, ...] )
+        int* resource_array = malloc(4 * sizeof(int));
+        resource_array[0] = (rand() % 9) + 1;
+        resource_array[1] = (rand() % (max_rsrc - min_rsrc + 1)) + min_rsrc;
+        resource_array[2] = resource_array[0] + 1; // Make sure the second resource is different from the first.
+        resource_array[3] = (rand() % (max_rsrc - min_rsrc + 1)) + min_rsrc;
+
+        task_t* task = create_task(task_id, priority, task_duration, resource_array, 2);
+        pthread_mutex_lock(&pqueues_lock);
         to_pqueues(task);
-        pthread_mutex_unlock(&lock);
+        pthread_mutex_unlock(&pqueues_lock);
         printf("Task %d queued with %s priority\n", task_id, ((priority == HIGH) ? "HIGH" : (priority == MEDIUM) ? "MEDIUM" : "LOW"));
     }
     return NULL;

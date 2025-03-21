@@ -1,5 +1,5 @@
 CC = gcc
-CFLAGS = -g -Wall -O0 -std=c99 -D_POSIX_C_SOURCE=200809L -pthread -Wno-sizeof-pointer-div
+CFLAGS = -g -Wall -O0 -std=c99 -D_POSIX_C_SOURCE=200809L -pthread
 LDFLAGS = -lm
 VALGRIND_FLAGS = --leak-check=full
 EXTRA_VALGRIND_FLAGS = --show-leak-kinds=all --track-origins=yes -s

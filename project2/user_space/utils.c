@@ -14,18 +14,19 @@ extern priority_queues_t* pqueues;
 extern task_queue_t* waiting_queue;
 
 void acquire_resources(task_t* task) {
-    if (can_acquire_resources(task)) {
+    printf("acquiring resources for task %d\n", task->tid);
+    // if (can_acquire_resources(task)) {
         if (task->resources == NULL) {
             // No resources were needed to run this task.
             return;
         }
         
-        size_t num_resources = sizeof(task->resources) / sizeof(task->resources[0]);
-        for (int i = 0; i < num_resources; i++) {
+        for (int i = 0; i < task->num_resources*2; i=i+2) {
+            printf("i: %d\n", i);
             // Get the ID and quantity of the resource.
-            int rid = task->resources[i].rid;
-            int num_needed;
-            sem_getvalue(task->resources[i].sem, &num_needed);
+            int rid = task->resources[i];
+            int num_needed = task->resources[i+1];
+            // sem_getvalue(task->resources[i].sem, &num_needed);
 
             // Find the resource in the resource queue using its ID and decrement its resource count.
             resource_t* resource = find_resource_id(resources, rid);
@@ -33,17 +34,11 @@ void acquire_resources(task_t* task) {
                 sem_wait(resource->sem);
             }
         }
-    }
+        printf("acquired resources for task %d\n", task->tid);
+    // }
 }
 
 bool are_there_any_uncompleted_tasks_left() {
-    // Check if there are any tasks in the waiting queue.
-    if (waiting_queue) {
-        if (waiting_queue->head != NULL) {
-            return true;
-        }
-    }
-
     // Check if there are any tasks in the priority queues.
     if (pqueues) {
         if (pqueues->high) {
@@ -62,9 +57,19 @@ bool are_there_any_uncompleted_tasks_left() {
             }
         }
     }
-
     return false;
 }
+
+bool are_there_any_waiting_tasks_left() {
+    // Check if there are any tasks in the waiting queue.
+    if (waiting_queue) {
+        if (waiting_queue->head != NULL) {
+            return true;
+        }
+    }
+    return false;
+}
+
 
 bool can_acquire_resources(task_t* task) {
     bool can_acquire = false;
@@ -76,18 +81,23 @@ bool can_acquire_resources(task_t* task) {
             return true;
         }
 
-        size_t num_resources = sizeof(task->resources) / sizeof(task->resources[0]);
-        for (int i = 0; i < num_resources; i++) {
+        for (int i = 0; i < task->num_resources*2; i=i+2) {
             // Get the ID and quantity of the resource.
-            int rid = task->resources[i].rid;
-            int num_needed;
-            sem_getvalue(task->resources[i].sem, &num_needed);
-
+            int rid = task->resources[i];
+            int num_needed = task->resources[i+1];
+            printf("rid: %d, num_needed: %d\n", rid, num_needed);
+            printf("pre-seg1\n");
+            // printf("is null: %d\n", task->resources[i].sem == NULL);
+            // sem_getvalue(task->resources[i].sem, &num_needed);
+            printf("post-seg1\n");
             // Find the resource in the resource queue using its ID and get its quantity.
             resource_t* resource;
             int num_available = 0;
             if ((resource = find_resource_id(resources, rid)) != NULL) {
+                printf("pre-seg2\n");
                 sem_getvalue(resource->sem, &num_available);
+                printf("num_available: %d\n", num_available);
+                printf("post-seg2\n");
             }
 
             // Check if enough of the resource is available.
@@ -95,6 +105,7 @@ bool can_acquire_resources(task_t* task) {
                 can_acquire = false;
                 break;
             }
+            printf("can acquire for task %d: %d\n", task->tid, can_acquire);
         }
     }
     return can_acquire;
@@ -139,18 +150,18 @@ void print_tqueue(task_queue_t* tqueue) {
 }
 
 void release_resources(task_t* task) {
+    printf("releasing resources for task %d\n", task->tid);
     if (task) {
         if (task->resources == NULL) {
             // No resources were needed to run this task.
             return;
         }
 
-        size_t num_resources = sizeof(task->resources) / sizeof(task->resources[0]);
-        for (int i = 0; i < num_resources; i++) {
+        for (int i = 0; i < task->num_resources*2; i=i+2) {
             // Get the ID and quantity of the resource.
-            int rid = task->resources[i].rid;
-            int num_needed;
-            sem_getvalue(task->resources[i].sem, &num_needed);
+            int rid = task->resources[i];
+            int num_needed = task->resources[i+1];
+            // sem_getvalue(task->resources[i].sem, &num_needed);
 
             // Find the resource in the resource queue using its ID and increment its resource count.
             resource_t* resource = find_resource_id(resources, rid);
@@ -159,6 +170,7 @@ void release_resources(task_t* task) {
             }
         }
     }
+    printf("released resources for task %d\n", task->tid);
 }
 
 void to_pqueues(task_t* task) {
