@@ -3,8 +3,8 @@
 // Date:    03/19/2025
 // Desc:    This file contains the main function for simulating the scheduler environment.
 
-#define NUM_RESOURCES 20 // Number of resources to make available to the scheduler.
-#define NUM_TASKS 30 // Number of tasks to generate and schedule.
+#define NUM_RESOURCES 10 // Number of resources to make available to the scheduler.
+#define NUM_TASKS 60 // Number of tasks to generate and schedule.
 
 #include <pthread.h>
 #include <stdio.h>
@@ -93,7 +93,7 @@ void* THREAD_generate_tasks(void* arg) {
 
         int task_id = rand();
         task_priority_t priority = (task_priority_t)(rand() % (max_priority - min_priority + 1)) + min_priority;
-        int task_duration = (rand() % 3) + 1; // Task duration between 1 and 3 seconds.
+        int task_duration = 1;// (rand() % 3) + 1; // Task duration between 1 and 3 seconds.
 
         // Resources and quantities required for a task. ( [resource_id, quantity, resource_id, quantity, ...] )
         int* resource_array = malloc(4 * sizeof(int));
@@ -107,7 +107,7 @@ void* THREAD_generate_tasks(void* arg) {
 
 
         // i think this loses things that are dupes
-        to_pqueues(task);
+        if (task) to_pqueues(task);
 
 
 

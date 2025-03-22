@@ -10,19 +10,20 @@
 #include <stdlib.h>
 #include <unistd.h>
 
-extern pthread_mutex_t completed_queue_lock;
+// extern pthread_mutex_t completed_queue_lock;
 extern pthread_mutex_t pqueues_lock;
 extern pthread_mutex_t waiting_queue_lock;
 extern pthread_mutex_t resources_lock;
 extern resource_queue_t* resources;
 extern priority_queues_t* pqueues;
 extern task_queue_t* waiting_queue;
-extern task_queue_t* completed_queue;
 
 void execute_task(task_t* task) {
     // Mimic task execution by sleeping for its duration.
     printf("Executing task %d...\n", task->tid);
+    if (task) {
     sleep(task->duration);
+    }
     printf("Task %d completed\n", task->tid);
 }
 
@@ -39,17 +40,26 @@ void process_pqueue(task_queue_t* pqueue) {
                 execute_task(task);
                 release_resources(task);
                 // Add the task to the completed queue.
-                enqueue_task(completed_queue, task);
+                // enqueue_task(completed_queue, task);
+                if (task) {
+                    if (task->resources) {
+                    free(task->resources);
+                }
+                free(task);
+                // enqueue_task(completed_queue, task);
+                }
+
                 // free(task->resources);
                 // free(task);
             } else {
                 // Task cannot acquire resources, add it to the waiting queue.
-                pthread_mutex_lock(&waiting_queue_lock);
+                // pthread_mutex_lock(&waiting_queue_lock);
                 // printf("Task %d cannot acquire resources, adding to waiting queue\n", task->tid);
+
                 enqueue_task(waiting_queue, task);
                 // printf("Task %d added to waiting queue\n", task->tid);
                 // print_tqueue(waiting_queue);
-                pthread_mutex_unlock(&waiting_queue_lock);
+                // pthread_mutex_unlock(&waiting_queue_lock);
             }
     }
     }
@@ -118,7 +128,7 @@ void schedule_tasks() {
         // print_pqueues(pqueues);
         pthread_mutex_lock(&pqueues_lock);
         pthread_mutex_lock(&resources_lock);
-        pthread_mutex_lock(&completed_queue_lock);
+        pthread_mutex_lock(&waiting_queue_lock);
         process_pqueue(pqueues->high);
         // print_tqueue(pqueues->high);
         process_pqueue(pqueues->medium);
@@ -126,7 +136,7 @@ void schedule_tasks() {
         process_pqueue(pqueues->low);
         // print_tqueue(pqueues->low);
         pthread_mutex_unlock(&pqueues_lock);
-        pthread_mutex_unlock(&completed_queue_lock);
+        pthread_mutex_unlock(&waiting_queue_lock);
         
         pthread_mutex_lock(&waiting_queue_lock);
         stop_scheduler = process_waiting_queue();
@@ -143,8 +153,8 @@ void schedule_tasks() {
         pthread_mutex_unlock(&waiting_queue_lock);
     }
 
-    pthread_mutex_lock(&completed_queue_lock);
-    print_tqueue(completed_queue);
-    pthread_mutex_unlock(&completed_queue_lock);
+    // pthread_mutex_lock(&completed_queue_lock);
+    // print_tqueue(completed_queue);
+    // pthread_mutex_unlock(&completed_queue_lock);
 }
 

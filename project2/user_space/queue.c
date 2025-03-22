@@ -140,14 +140,27 @@ void free_resource_queue(resource_queue_t* rqueue) {
 }
 
 void free_task_queue(task_queue_t* tqueue) {
+    // if (tqueue) {
+    //     task_t* curr = tqueue->head;
+    //     task_t* prev = NULL;
+    //     while (curr != NULL) {
+    //         prev = curr;
+    //         curr = curr->next;
+    //         if (prev->resources) {
+    //             free(prev->resources);
+    //         }
+    //         // free(prev->resources);
+    //         free(prev);
+    //     }
+    //     free(tqueue);
+    // }
     if (tqueue) {
-        task_t* curr = tqueue->head;
-        task_t* prev = NULL;
-        while (curr != NULL) {
-            prev = curr;
-            curr = curr->next;
-            free(prev->resources);
-            free(prev);
+        task_t* task = NULL;
+        while ((task = dequeue_task(tqueue)) != NULL) {
+            if (task->resources) {
+                free(task->resources);
+            }
+            free(task);
         }
         free(tqueue);
     }
@@ -194,6 +207,7 @@ task_t* remove_task(task_queue_t* tqueue, int tid) {
                 if (tqueue->tail == curr) {
                     tqueue->tail = prev;
                 }
+                curr->next = NULL;
                 return curr;
             }
             prev = curr;
