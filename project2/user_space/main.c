@@ -104,7 +104,13 @@ void* THREAD_generate_tasks(void* arg) {
 
         task_t* task = create_task(task_id, priority, task_duration, resource_array, 2);
         pthread_mutex_lock(&pqueues_lock);
+
+
+        // i think this loses things that are dupes
         to_pqueues(task);
+
+
+
         pthread_mutex_unlock(&pqueues_lock);
         printf("Task %d queued with %s priority\n", task_id, ((priority == HIGH) ? "HIGH" : (priority == MEDIUM) ? "MEDIUM" : "LOW"));
     }

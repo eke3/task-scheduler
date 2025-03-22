@@ -1,6 +1,8 @@
 #ifndef SCHEDULER_H
 #define SCHEDULER_H
 
+#define TASK_OLD_AGE 20
+
 #include "utils.h"
 
 #ifdef __cplusplus

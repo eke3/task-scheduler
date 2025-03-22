@@ -14,7 +14,7 @@ extern priority_queues_t* pqueues;
 extern task_queue_t* waiting_queue;
 
 void acquire_resources(task_t* task) {
-    printf("acquiring resources for task %d\n", task->tid);
+    // printf("acquiring resources for task %d\n", task->tid);
     // if (can_acquire_resources(task)) {
         if (task->resources == NULL) {
             // No resources were needed to run this task.
@@ -34,7 +34,7 @@ void acquire_resources(task_t* task) {
                 sem_wait(resource->sem);
             }
         }
-        printf("acquired resources for task %d\n", task->tid);
+        // printf("acquired resources for task %d\n", task->tid);
     // }
 }
 
@@ -85,19 +85,19 @@ bool can_acquire_resources(task_t* task) {
             // Get the ID and quantity of the resource.
             int rid = task->resources[i];
             int num_needed = task->resources[i+1];
-            printf("rid: %d, num_needed: %d\n", rid, num_needed);
-            printf("pre-seg1\n");
+            // printf("rid: %d, num_needed: %d\n", rid, num_needed);
+            // printf("pre-seg1\n");
             // printf("is null: %d\n", task->resources[i].sem == NULL);
             // sem_getvalue(task->resources[i].sem, &num_needed);
-            printf("post-seg1\n");
+            // printf("post-seg1\n");
             // Find the resource in the resource queue using its ID and get its quantity.
             resource_t* resource;
             int num_available = 0;
             if ((resource = find_resource_id(resources, rid)) != NULL) {
-                printf("pre-seg2\n");
+                // printf("pre-seg2\n");
                 sem_getvalue(resource->sem, &num_available);
-                printf("num_available: %d\n", num_available);
-                printf("post-seg2\n");
+                // printf("num_available: %d\n", num_available);
+                // printf("post-seg2\n");
             }
 
             // Check if enough of the resource is available.
@@ -105,7 +105,7 @@ bool can_acquire_resources(task_t* task) {
                 can_acquire = false;
                 break;
             }
-            printf("can acquire for task %d: %d\n", task->tid, can_acquire);
+            // printf("can acquire for task %d: %d\n", task->tid, can_acquire);
         }
     }
     return can_acquire;
@@ -150,7 +150,7 @@ void print_tqueue(task_queue_t* tqueue) {
 }
 
 void release_resources(task_t* task) {
-    printf("releasing resources for task %d\n", task->tid);
+    // printf("releasing resources for task %d\n", task->tid);
     if (task) {
         if (task->resources == NULL) {
             // No resources were needed to run this task.
@@ -170,7 +170,7 @@ void release_resources(task_t* task) {
             }
         }
     }
-    printf("released resources for task %d\n", task->tid);
+    // printf("released resources for task %d\n", task->tid);
 }
 
 void to_pqueues(task_t* task) {

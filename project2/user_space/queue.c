@@ -85,6 +85,7 @@ void enqueue_resource(resource_queue_t* rqueue, resource_t* resource) {
         } else {
             rqueue->tail->next = resource;
             rqueue->tail = resource;
+            resource->next = NULL;
         }
     }
 }
@@ -93,11 +94,13 @@ void enqueue_task(task_queue_t* tqueue, task_t* task) {
     if (tqueue && task) {
         if (task->tid <= 0 || task->num_resources < 0) {
             // Task has ID less than 1 or negative number of resources, reject insertion.
+            free(task->resources);
             free(task);
             return;
         }
         if (find_task_id(tqueue, task->tid) != NULL) {
             // Task already exists, reject insertion.
+            free(task->resources);
             free(task);
             return;
         }
@@ -107,6 +110,7 @@ void enqueue_task(task_queue_t* tqueue, task_t* task) {
         } else {
             tqueue->tail->next = task;
             tqueue->tail = task;
+            task->next = NULL;
         }
     }
 }
