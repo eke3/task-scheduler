@@ -23,6 +23,11 @@ extern void acquire_resources(task_t* task);
 // Returns: True if there are any uncompleted tasks left, false otherwise.
 extern bool are_there_any_uncompleted_tasks_left(void);
 
+// bool are_there_any_waiting_tasks_left()
+// Description: Checks if there are any waiting tasks left in the scheduler.
+// Preconditions: None.
+// Postconditions: None.
+// Returns: True if there are any tasks in the waiting queue, false otherwise.
 extern bool are_there_any_waiting_tasks_left(void);
 
 // bool can_acquire_resources(task_t* task)
