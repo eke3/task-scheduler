@@ -8,10 +8,6 @@
 #include <pthread.h>
 #include <stdlib.h>
 
-extern pthread_mutex_t pqueues_lock;
-extern pthread_mutex_t waiting_queue_lock;
-extern pthread_mutex_t resources_lock;
-
 priority_queues_t* create_priority_queues() {
     priority_queues_t* pqueues;
     if ((pqueues = malloc(sizeof(priority_queues_t))) == NULL) {

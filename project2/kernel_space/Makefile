@@ -1,0 +1,1 @@
+obj-y := kutils.o ktask.o kscheduler.o kresource.o kqueue.o kenvironment.o

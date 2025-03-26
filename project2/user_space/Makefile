@@ -6,6 +6,7 @@ EXTRA_VALGRIND_FLAGS = --show-leak-kinds=all --track-origins=yes -s
 
 TARGET = task_scheduler
 TEST_TARGET = ../tests/user_tests
+KTEST_TARGET = ../tests/kernel_tests
 SOURCES = main.c environment.c utils.c queue.c task.c resource.c scheduler.c
 OBJECTS = $(SOURCES:.c=.o)
 

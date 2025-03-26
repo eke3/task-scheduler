@@ -64,6 +64,7 @@ struct perf_event_attr;
 struct file_handle;
 struct sigaltstack;
 struct rseq;
+struct task;
 union bpf_attr;
 struct io_uring_params;
 struct clone_args;
@@ -1381,4 +1382,9 @@ int __sys_getsockopt(int fd, int level, int optname, char __user *optval,
 		int __user *optlen);
 int __sys_setsockopt(int fd, int level, int optname, char __user *optval,
 		int optlen);
+
+asmlinkage long sys_add_task(struct task __user *task);
+asmlinkage long sys_acquire_resources(struct task __user *task);
+asmlinkage long sys_release_resources(struct task __user *task);
+asmlinkage long sys_schedule_tasks(void);
 #endif

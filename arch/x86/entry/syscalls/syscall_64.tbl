@@ -415,3 +415,7 @@
 547	x32	pwritev2		compat_sys_pwritev64v2
 # This is the end of the legacy x32 range.  Numbers 548 and above are
 # not special and are not to be used for x32-specific syscalls.
+548	common	add_task	sys_add_task
+549	common	schedule_tasks	sys_schedule_tasks
+550	common	acquire_resources	sys_acquire_resources
+551	common	release_resources	sys_release_resources
