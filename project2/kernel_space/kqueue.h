@@ -103,4 +103,4 @@ extern task_t* find_task_id(task_queue_t* tqueue, int tid);
 // Returns: A pointer to the removed task.
 extern task_t* remove_task(task_queue_t* tqueue, int tid);
 
-
+#endif

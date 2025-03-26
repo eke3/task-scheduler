@@ -8,7 +8,7 @@ extern resource_queue_t* resources;
 extern priority_queues_t* pqueues;
 extern task_queue_t* waiting_queue;
 
-SYSCALL_DEFINE1(sys_add_task, task_t __user *, task) {
+SYSCALL_DEFINE1(add_task, task_t __user *, task) {
     task_t* kernel_task;
     if ((kernel_task = (task_t*)kmalloc(sizeof(task_t), GFP_KERNEL)) != NULL) {
         if (copy_from_user(kernel_task, task, sizeof(task_t)) != 0) {
@@ -22,7 +22,7 @@ SYSCALL_DEFINE1(sys_add_task, task_t __user *, task) {
     return 0;
 }
 
-SYSCALL_DEFINE1(sys_acquire_resources, task_t __user *, task) {
+SYSCALL_DEFINE1(acquire_resources, task_t __user *, task) {
     task_t* kernel_task;
     if ((kernel_task = (task_t*)kmalloc(sizeof(task_t), GFP_KERNEL)) != NULL) {
         if (copy_from_user(kernel_task, task, sizeof(task_t)) != 0) {
@@ -37,7 +37,7 @@ SYSCALL_DEFINE1(sys_acquire_resources, task_t __user *, task) {
     return 0;
 }
 
-SYSCALL_DEFINE1(sys_release_resources, task_t __user *, task) {
+SYSCALL_DEFINE1(release_resources, task_t __user *, task) {
     task_t* kernel_task;
     if ((kernel_task = (task_t*)kmalloc(sizeof(task_t), GFP_KERNEL)) != NULL) {
         if (copy_from_user(kernel_task, task, sizeof(task_t)) != 0) {
@@ -134,43 +134,46 @@ int can_acquire_resources(task_t* task) {
     return can_acquire_success;
 }
 
+
+
+// void print_rqueue(resource_queue_t* rqueue) {
+//     if (rqueue != NULL) {
+//         resource_t* curr = rqueue->head;
+//         printf("Printing resource queue...\n{\n");
+//         while (curr != NULL) {
+//             int quantity;
+//             sem_getvalue(curr->sem, &quantity);
+//             printf("\tResource ID: %d\tQuantity: %d\n", curr->rid, quantity);
+//             curr = curr->next;
+//         }
+//         printf("}\n");
+//     }
+// }
+
+void print_tqueue(task_queue_t* tqueue) {
+    if (tqueue) {
+        task_t* curr = tqueue->head;
+        printk(KERN_INFO "{\n");
+        while (curr != NULL) {
+            printk(KERN_INFO "\tTask ID: %d\n", curr->tid);
+            curr = curr->next;
+        }
+        printk(KERN_INFO "}\n");
+    }
+}
+
 void print_pqueues(priority_queues_t* pqueues) {
     if (pqueues != NULL) {
-        printf("Printing priority queues...\n");
-        printf("High:\n");
+        printk(KERN_INFO "Printing priority queues...\n");
+        printk(KERN_INFO "High:\n");
         print_tqueue(pqueues->high);
-        printf("Medium:\n");
+        printk(KERN_INFO "Medium:\n");
         print_tqueue(pqueues->medium);
-        printf("Low:\n");
+        printk(KERN_INFO "Low:\n");
         print_tqueue(pqueues->low);
     }
 }
 
-void print_rqueue(resource_queue_t* rqueue) {
-    if (rqueue != NULL) {
-        resource_t* curr = rqueue->head;
-        printf("Printing resource queue...\n{\n");
-        while (curr != NULL) {
-            int quantity;
-            sem_getvalue(curr->sem, &quantity);
-            printf("\tResource ID: %d\tQuantity: %d\n", curr->rid, quantity);
-            curr = curr->next;
-        }
-        printf("}\n");
-    }
-}
-
-void print_tqueue(task_queue_t* tqueue) {
-    if (tqueue != NULL) {
-        task_t* curr = tqueue->head;
-        printf("{\n");
-        while (curr != NULL) {
-            printf("\tTask ID: %d\n", curr->tid);
-            curr = curr->next;
-        }
-        printf("}\n");
-    }
-}
 
 void release_resources(task_t* task) {
     int i, j;

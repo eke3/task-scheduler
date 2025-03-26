@@ -1,7 +1,6 @@
-#include <kenvironment.h>
+#include "kenvironment.h"
 
 #include <linux/mutex.h>
-#include <stdlib.h>
 
 struct mutex pqueues_lock;
 struct mutex resources_lock;
@@ -19,8 +18,7 @@ void set_up() {
     mutex_init(&waiting_queue_lock);
 
     if (pqueues == NULL || waiting_queue == NULL || resources == NULL) {
-        tear_down();
-        exit(EXIT_FAILURE);
+        printk(KERN_ERR "set_up() failed: Memory allocation error.\n");
     }
 }
 

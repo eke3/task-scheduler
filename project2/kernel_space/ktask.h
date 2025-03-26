@@ -32,3 +32,5 @@ extern task_t* create_task(int tid, task_priority_t priority, int duration, int*
 // Postconditions: The task's priority is increased by one step.
 // Returns: None.
 extern void increase_priority(task_t* task);
+
+#endif

@@ -3,11 +3,11 @@
 
 #include <linux/semaphore.h>
 
-typedef struct resource {
+typedef struct resource_obj {
     int rid;
     struct semaphore sem;
     int quantity;
-    struct resource* next;
+    struct resource_obj* next;
 } resource_t;
 
 // resource_t* create_resource(int rid, int quantity)

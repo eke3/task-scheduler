@@ -37,6 +37,18 @@ task_queue_t* create_task_queue() {
     return tqueue;
 }
 
+resource_t* dequeue_resource(resource_queue_t* rqueue) {
+    resource_t* resource = NULL;
+    if (rqueue != NULL) {
+        resource = rqueue->head;
+        if (resource != NULL) {
+            // Set the head to the next resource.
+            rqueue->head = resource->next;
+        }
+    }
+    return resource;
+}
+
 task_t* dequeue_task(task_queue_t* tqueue) {
     task_t* task = NULL;
     if (tqueue != NULL) {
@@ -50,8 +62,6 @@ task_t* dequeue_task(task_queue_t* tqueue) {
 }
 
 void enqueue_resource(resource_queue_t* rqueue, resource_t* resource) {
-    resource_t* existing_resource = NULL;
-    int enqueue_quantity = 0;
     if ((rqueue != NULL) && (resource != NULL)) {
         if (rqueue->head == NULL) {
             rqueue->head = resource;
@@ -59,7 +69,7 @@ void enqueue_resource(resource_queue_t* rqueue, resource_t* resource) {
         } else {
             rqueue->tail->next = resource;
             rqueue->tail = resource;
-            resource->tail->next = NULL;
+            rqueue->tail->next = NULL;
         }
     }
 }
@@ -72,7 +82,7 @@ void enqueue_task(task_queue_t* tqueue, task_t* task) {
         } else {
             tqueue->tail->next = task;
             tqueue->tail = task;
-            task->tail->next = NULL;
+            tqueue->tail->next = NULL;
         }
     }
 }

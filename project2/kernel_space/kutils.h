@@ -38,12 +38,12 @@ extern int can_acquire_resources(task_t* task);
 // Returns: None.
 extern void print_pqueues(priority_queues_t* pqueues);
 
-// void print_rqueue(resource_queue_t* rqueue)
-// Description: Prints a resource queue.
-// Preconditions: A valid resource queue pointer is passed as an argument.
-// Postconditions: The resource queue is printed to the console.
-// Returns: None.
-extern void print_rqueue(resource_queue_t* rqueue);
+// // void print_rqueue(resource_queue_t* rqueue)
+// // Description: Prints a resource queue.
+// // Preconditions: A valid resource queue pointer is passed as an argument.
+// // Postconditions: The resource queue is printed to the console.
+// // Returns: None.
+// extern void print_rqueue(resource_queue_t* rqueue);
 
 // void print_tqueue(task_queue_t* tqueue)
 // Description: Prints a task queue.

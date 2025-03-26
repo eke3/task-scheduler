@@ -31,6 +31,6 @@ extern int process_waiting_queue(void);
 // Preconditions: The environment is set up.
 // Postconditions: Queued tasks are scheduled and run according to their priority.
 // Returns: None.
-extern void schedule_tasks(void);
+extern void run_schedule_tasks(void);
 
 #endif
