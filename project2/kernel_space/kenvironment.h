@@ -1,8 +1,6 @@
 #ifndef KENVIRONMENT_H 
 #define KENVIRONMENT_H
 
-#include "kutils.h"
-
 // void set_up()
 // Description: Sets up the environment for the scheduler.
 // Preconditions: None.

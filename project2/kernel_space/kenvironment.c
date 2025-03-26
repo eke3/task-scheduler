@@ -1,5 +1,6 @@
 #include "kenvironment.h"
 
+#include "kutils.h"
 #include <linux/mutex.h>
 
 struct mutex pqueues_lock;
