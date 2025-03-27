@@ -8,7 +8,7 @@
 #include <errno.h>
 #include <linux/kernel.h>
 #include <sys/syscall.h>
-#include "../kernel_space/task_priority.h"
+#include "../kernel_space/ktask_priority.h"
 
 #define __NR_add_task 548
 #define __NR_schedule_tasks 549

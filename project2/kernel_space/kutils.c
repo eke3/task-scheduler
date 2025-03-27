@@ -3,6 +3,7 @@
 #include <linux/syscalls.h>
 #include <linux/kernel.h>
 #include <linux/uaccess.h>
+#include <linux/semaphore.h>
 
 extern resource_queue_t* resources;
 extern priority_queues_t* pqueues;
@@ -22,6 +23,21 @@ SYSCALL_DEFINE5(add_task, int, tid, task_priority_t, priority, int, duration, in
 
     to_pqueues(task);
 
+    return 0;
+}
+
+SYSCALL_DEFINE0(print_priority_queues) {
+    print_pqueues(pqueues);
+    return 0;
+}
+
+SYSCALL_DEFINE0(print_waiting_queue) {
+    print_tqueue(waiting_queue);
+    return 0;
+}
+
+SYSCALL_DEFINE0(print_resource_queue) {
+    print_rqueue(resources);
     return 0;
 }
 
@@ -109,19 +125,19 @@ int can_acquire_resources(task_t* task) {
 
 
 
-// void print_rqueue(resource_queue_t* rqueue) {
-//     if (rqueue != NULL) {
-//         resource_t* curr = rqueue->head;
-//         printf("Printing resource queue...\n{\n");
-//         while (curr != NULL) {
-//             int quantity;
-//             sem_getvalue(curr->sem, &quantity);
-//             printf("\tResource ID: %d\tQuantity: %d\n", curr->rid, quantity);
-//             curr = curr->next;
-//         }
-//         printf("}\n");
-//     }
-// }
+void print_rqueue(resource_queue_t* rqueue) {
+    if (rqueue != NULL) {
+        resource_t* curr = rqueue->head;
+        printk(KERN_INFO "Printing resource queue...\n{\n");
+        while (curr != NULL) {
+            int quantity;
+            quantity = curr->sem.count;
+            printk(KERN_INFO "\tResource ID: %d\tQuantity: %d\n", curr->rid, quantity);
+            curr = curr->next;
+        }
+        printk(KERN_INFO "}\n");
+    }
+}
 
 void print_tqueue(task_queue_t* tqueue) {
     if (tqueue) {

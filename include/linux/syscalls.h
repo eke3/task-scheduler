@@ -1387,4 +1387,7 @@ asmlinkage long sys_add_task(int tid, task_priority_t priority, int duration, in
 asmlinkage long sys_schedule_tasks(void);
 asmlinkage long sys_set_up_scheduler(void);
 asmlinkage long sys_tear_down_scheduler(void);
+asmlinkage long sys_print_pqueues(void);
+asmlinkage long sys_print_resources(void);
+asmlinkage long sys_print_waiting(void);
 #endif
