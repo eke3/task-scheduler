@@ -64,7 +64,6 @@ struct perf_event_attr;
 struct file_handle;
 struct sigaltstack;
 struct rseq;
-struct task;
 union bpf_attr;
 struct io_uring_params;
 struct clone_args;
@@ -86,6 +85,7 @@ enum landlock_rule_type;
 #include <linux/key.h>
 #include <linux/personality.h>
 #include <trace/syscall.h>
+#include "../../project2/kernel_space/ktask_priority.h"
 
 #ifdef CONFIG_ARCH_HAS_SYSCALL_WRAPPER
 /*
@@ -1383,8 +1383,8 @@ int __sys_getsockopt(int fd, int level, int optname, char __user *optval,
 int __sys_setsockopt(int fd, int level, int optname, char __user *optval,
 		int optlen);
 
-asmlinkage long sys_add_task(struct task __user *task);
-asmlinkage long sys_acquire_resources(struct task __user *task);
-asmlinkage long sys_release_resources(struct task __user *task);
+asmlinkage long sys_add_task(int tid, task_priority_t priority, int duration, int __user *resources, size_t num_resources);
 asmlinkage long sys_schedule_tasks(void);
+asmlinkage long sys_set_up_scheduler(void);
+asmlinkage long sys_tear_down_scheduler(void);
 #endif

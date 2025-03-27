@@ -417,5 +417,5 @@
 # not special and are not to be used for x32-specific syscalls.
 548	common	add_task	sys_add_task
 549	common	schedule_tasks	sys_schedule_tasks
-550	common	acquire_resources	sys_acquire_resources
-551	common	release_resources	sys_release_resources
+550	common	set_up_scheduler	sys_set_up_scheduler
+551	common	tear_down_scheduler	sys_tear_down_scheduler

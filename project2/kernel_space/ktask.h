@@ -2,12 +2,7 @@
 #define KTASK_H
 
 #include "kresource.h"
-
-typedef enum task_priority {
-    HIGH = 2,
-    MEDIUM = 1,
-    LOW = 0
-} task_priority_t;
+#include "ktask_priority.h"
 
 typedef struct task {
     int tid;

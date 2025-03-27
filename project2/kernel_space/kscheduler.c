@@ -7,6 +7,7 @@
 #include <linux/mutex.h>
 #include <linux/slab.h>
 #include <linux/delay.h>
+#include "kqueue.h"
 
 extern struct mutex pqueues_lock;
 extern struct mutex resources_lock;

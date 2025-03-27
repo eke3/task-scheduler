@@ -8,47 +8,20 @@ extern resource_queue_t* resources;
 extern priority_queues_t* pqueues;
 extern task_queue_t* waiting_queue;
 
-SYSCALL_DEFINE1(add_task, task_t __user *, task) {
-    task_t* kernel_task;
-    if ((kernel_task = (task_t*)kmalloc(sizeof(task_t), GFP_KERNEL)) != NULL) {
-        if (copy_from_user(kernel_task, task, sizeof(task_t)) != 0) {
-            kfree(kernel_task);
-            return -EFAULT;
-        }
-        to_pqueues(kernel_task);
-    } else {
-        return -ENOMEM;
-    }
-    return 0;
-}
+SYSCALL_DEFINE5(add_task, int, tid, task_priority_t, priority, int, duration, int __user *, resources, size_t, num_resources) {
+    int* resources_array = NULL;
+    task_t* task = NULL;
 
-SYSCALL_DEFINE1(acquire_resources, task_t __user *, task) {
-    task_t* kernel_task;
-    if ((kernel_task = (task_t*)kmalloc(sizeof(task_t), GFP_KERNEL)) != NULL) {
-        if (copy_from_user(kernel_task, task, sizeof(task_t)) != 0) {
-            kfree(kernel_task);
-            return -EFAULT;
-        }
-        acquire_resources(kernel_task);
-        kfree(kernel_task);
-    } else {
-        return -ENOMEM;
-    }
-    return 0;
-}
+    resources_array = (int*)kmalloc(num_resources*2*sizeof(int), GFP_KERNEL);
 
-SYSCALL_DEFINE1(release_resources, task_t __user *, task) {
-    task_t* kernel_task;
-    if ((kernel_task = (task_t*)kmalloc(sizeof(task_t), GFP_KERNEL)) != NULL) {
-        if (copy_from_user(kernel_task, task, sizeof(task_t)) != 0) {
-            kfree(kernel_task);
-            return -EFAULT;
-        }
-        release_resources(kernel_task);
-        kfree(kernel_task);
-    } else {
-        return -ENOMEM;
+    if (copy_from_user(resources_array, resources, num_resources*2*sizeof(int))) {
+        return -EINVAL;
     }
+
+    task = create_task(tid, priority, duration, resources_array, num_resources);
+
+    to_pqueues(task);
+
     return 0;
 }
 
@@ -63,7 +36,7 @@ void acquire_resources(task_t* task) {
             rid = task->resources[i];
             num_needed = task->resources[i+1];
             resource = find_resource_id(resources, rid);
-            for (j; j < num_needed; j++) {
+            for (j = 0; j < num_needed; j++) {
                 down(&resource->sem);
             }
         }
