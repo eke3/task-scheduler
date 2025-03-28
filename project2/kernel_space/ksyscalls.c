@@ -1,4 +1,5 @@
 #include "kutils.h"
+#include "kscheduler.h"
 
 #include <linux/uaccess.h>
 #include <linux/syscalls.h>
@@ -24,17 +25,22 @@ SYSCALL_DEFINE5(add_task, int, tid, task_priority_t, priority, int, duration, in
     return 0;
 }
 
-SYSCALL_DEFINE0(print_priority_queues) {
+SYSCALL_DEFINE0(schedule_tasks) {
+    run_schedule_tasks();
+    return 0;
+}
+
+SYSCALL_DEFINE0(print_pq) {
     print_pqueues(pqueues);
     return 0;
 }
 
-SYSCALL_DEFINE0(print_waiting_queue) {
+SYSCALL_DEFINE0(print_wq) {
     print_tqueue(waiting_queue);
     return 0;
 }
 
-SYSCALL_DEFINE0(print_resource_queue) {
+SYSCALL_DEFINE0(print_rq) {
     print_rqueue(resources);
     return 0;
 }

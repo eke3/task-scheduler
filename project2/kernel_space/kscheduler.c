@@ -16,11 +16,6 @@ extern resource_queue_t* resources;
 extern priority_queues_t* pqueues;
 extern task_queue_t* waiting_queue;
 
-SYSCALL_DEFINE0(schedule_tasks) {
-    run_schedule_tasks();
-    return 0;
-}
-
 void execute_task(task_t* task) {
     // Mimic task execution by sleeping for its duration.
     printk(KERN_INFO "Executing task %d...\n", task->tid);
