@@ -20,8 +20,13 @@ void acquire_resources(task_t* task) {
             rid = task->resources[i];
             num_needed = task->resources[i+1];
             resource = find_resource_id(resources, rid);
-            for (j = 0; j < num_needed; j++) {
-                down(&resource->sem);
+            if (resource != NULL) {
+                for (j = 0; j < num_needed; j++) {
+                    down(&resource->sem);
+                }        
+            } else {
+                // Resource not found.
+                printk(KERN_ERR "acquire_resources() failed: Resource not found.\n");
             }
         }
     }

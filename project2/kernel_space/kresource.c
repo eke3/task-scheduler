@@ -1,6 +1,7 @@
 #include "kresource.h"
 
 #include <linux/slab.h>
+#include <linux/kernel.h>
 
 resource_t* create_resource(int rid, int quantity) {
     resource_t* resource;
@@ -12,6 +13,7 @@ resource_t* create_resource(int rid, int quantity) {
 
     if ((resource = (resource_t*)kmalloc(sizeof(resource_t), GFP_KERNEL)) == NULL) {
         // Memory allocation failed.
+        printk(KERN_ERR "create_resource() failed: Memory allocation error.\n");
         return NULL;
     }
 
