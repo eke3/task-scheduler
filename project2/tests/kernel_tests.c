@@ -15,6 +15,9 @@
 #define __NR_set_up_scheduler 550
 #define __NR_tear_down_scheduler 551
 #define __NR_print_pqueues 552
+#define __NR_print_wqueue 553
+#define __NR_print_rqueue 554
+#define __NR_add_resource 555
 
 
 long add_task_syscall(int tid, task_priority_t priority, int duration, int* resources, size_t num_resources) {
@@ -35,6 +38,14 @@ long tear_down_scheduler_syscall() {
 
 long print_pqueues_syscall() {
     return syscall(__NR_print_pqueues);
+}
+
+long print_wqueue_syscall() {
+    return syscall(__NR_print_wqueue);
+}
+
+long print_rqueue_syscall() {
+    return syscall(__NR_print_rqueue);
 }
 
 void test_sys_add_task(void);
@@ -63,6 +74,7 @@ void test_sys_add_task() {
     print_pqueues_syscall();
     schedule_tasks_syscall();
     print_pqueues_syscall();
+    print_wqueue_syscall();
 
 
     tear_down_scheduler_syscall();
