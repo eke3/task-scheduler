@@ -75,17 +75,21 @@ int can_acquire_resources(task_t* task) {
     if (task != NULL) {
         can_acquire_success = 0;
         if (task->resources != NULL) {
+            printk(KERN_INFO "task->resources not NULL\n");
             for (i = 0; i < (task->num_resources*2); i+=2) {
                 rid = task->resources[i];
                 num_needed = task->resources[i+1];
                 if ((resource = find_resource_id(resources, rid)) != NULL) {
+                    printk(KERN_INFO "can_acquire_resources(): Found resource %d\n", rid);
                     num_available = resource->quantity;
                     if (num_available > num_needed) {
                         // Not enough of some resource
+                        printk(KERN_INFO "can_acquire_resources(): Not enough of resource %d\n", rid);
                         can_acquire_success = -1;
                         break;
                     }
                 } else {
+                    printk(KERN_INFO "can_acquire_resources(): Didn't find resource %d\n", rid);
                     // Didn't find a required resource, task won't be able to run.
                     can_acquire_success = -1;
                     break;
@@ -93,6 +97,7 @@ int can_acquire_resources(task_t* task) {
             }
         }
     }
+    printk(KERN_INFO "Can acquire resources?: %d\n", can_acquire_success);
     return can_acquire_success;
 }
 
@@ -148,8 +153,10 @@ void release_resources(task_t* task) {
             rid = task->resources[i];
             num_to_release = task->resources[i+1];
             resource = find_resource_id(resources, rid);
-            for (j = 0; j < num_to_release; j++) {
-                up(&resource->sem);
+            if (resource != NULL) {
+                for (j = 0; j < num_to_release; j++) {
+                    up(&resource->sem);
+                }
             }
         }
     }

@@ -28,12 +28,14 @@ void execute_task(task_t* task) {
 void process_pqueue(task_queue_t* pqueue) {
     task_t* task = NULL;
     while ((task = dequeue_task(pqueue)) != NULL) {
-        if (can_acquire_resources(task)) {
+        if (can_acquire_resources(task) == 0) {
+            printk(KERN_INFO "process_pqueue(): Task %d can acquire resources\n", task->tid);
             acquire_resources(task);
             execute_task(task);
             release_resources(task);
             kfree(task);
         } else {
+            printk(KERN_INFO "process_pqueue(): Task %d cannot acquire resources\n", task->tid);
             enqueue_task(waiting_queue, task);
         }
     }
@@ -56,7 +58,7 @@ int process_waiting_queue() {
 
     curr = waiting_queue->head;
     while (curr != NULL) {
-        if (can_acquire_resources(curr)) {
+        if (can_acquire_resources(curr) == 0) {
             // Task can acquire resources. add its ID to the array.
             ids[count] = curr->tid;
             count++;

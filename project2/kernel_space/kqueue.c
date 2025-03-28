@@ -1,6 +1,7 @@
 #include "kqueue.h"
 
 #include <linux/slab.h>
+#include <linux/kernel.h>
 
 priority_queues_t* create_priority_queues() {
     priority_queues_t* pqueues = NULL;
@@ -127,6 +128,7 @@ resource_t* find_resource_id(resource_queue_t* rqueue, int rid) {
             curr = curr->next;
         }
     }
+    printk("find_resource_id(): Resource is %s NULL\n", curr == NULL ? "" : "NOT");
     return curr;
 }
 
