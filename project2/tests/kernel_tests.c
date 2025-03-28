@@ -48,6 +48,10 @@ long print_rqueue_syscall() {
     return syscall(__NR_print_rqueue);
 }
 
+long add_resource_syscall(int rid, int quantity) {
+    return syscall(__NR_add_resource);
+}
+
 void test_sys_add_task(void);
 void test_sys_schedule_tasks(void);
 
@@ -75,6 +79,8 @@ void test_sys_add_task() {
     schedule_tasks_syscall();
     print_pqueues_syscall();
     print_wqueue_syscall();
+    add_resource_syscall(1,1);
+    print_rqueue_syscall();
 
 
     tear_down_scheduler_syscall();

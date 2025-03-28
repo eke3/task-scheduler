@@ -23,6 +23,7 @@ void acquire_resources(task_t* task) {
             if (resource != NULL) {
                 for (j = 0; j < num_needed; j++) {
                     down(&resource->sem);
+                    resource->quantity--;
                 }        
             } else {
                 // Resource not found.
@@ -156,6 +157,7 @@ void release_resources(task_t* task) {
             if (resource != NULL) {
                 for (j = 0; j < num_to_release; j++) {
                     up(&resource->sem);
+                    resource->quantity++;
                 }
             }
         }

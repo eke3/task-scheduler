@@ -422,3 +422,4 @@
 552	common	print_pq	sys_print_pq
 553	common	print_wq	sys_print_wq
 554	common	print_rq	sys_print_rq
+555	common	add_resource	sys_add_resource
