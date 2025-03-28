@@ -420,5 +420,4 @@
 550	common	set_up_scheduler	sys_set_up_scheduler
 551	common	tear_down_scheduler	sys_tear_down_scheduler
 552	common	print_priority_queues	sys_print_pqueues
-553	common	print_waiting_queue	sys_print_waiting
-554	common	print_resource_queue	sys_print_resources
+
