@@ -52,13 +52,52 @@ long add_resource_syscall(int rid, int quantity) {
     return syscall(__NR_add_resource, rid, quantity);
 }
 
+void add_resources() {
+    for (int i = 1; i <= 10; i++) {
+        add_resource_syscall(i,i);
+    }
+}
+
+void add_tasks() {
+    int min_rsrc = 0; // Minimum number of a resource needed to run a task.
+    int max_rsrc = 5; // Maximum number of a resource needed to run a task.
+    task_priority_t min_priority = LOW;
+    task_priority_t max_priority = HIGH;
+
+    // Create NUM_TASKS tasks and inject them into the scheduler.
+    for (int i = 1; i <= 10; i++) {
+
+        int task_id = rand();
+        task_priority_t priority = (task_priority_t)(rand() % (max_priority - min_priority + 1)) + min_priority;
+        int task_duration = 1;// (rand() % 3) + 1; // Task duration between 1 and 3 seconds.
+
+        // Resources and quantities required for a task. ( [resource_id, quantity, resource_id, quantity, ...] )
+        int* resource_array = malloc(4 * sizeof(int));
+        resource_array[0] = (rand() % 9) + 1;
+        resource_array[1] = (rand() % (max_rsrc - min_rsrc + 1)) + min_rsrc;
+        resource_array[2] = resource_array[0] + 1; // Make sure the second resource is different from the first.
+        resource_array[3] = (rand() % (max_rsrc - min_rsrc + 1)) + min_rsrc;
+        size_t num_resources = 2;
+        add_task_syscall(task_id,priority, task_duration, resource_array, num_resources);
+    }  
+}
+
 void test_sys_add_task(void);
 void test_sys_schedule_tasks(void);
 
 int main() {
 
-    test_sys_add_task();
-
+    set_up_scheduler_syscall();
+    add_resources();
+    add_tasks();
+    print_pqueues_syscall();
+    print_wqueue_syscall();
+    print_rqueue_syscall();
+    // schedule_tasks_syscall();
+    // print_pqueues_syscall();
+    // print_wqueue_syscall();
+    // print_rqueue_syscall();
+    tear_down_scheduler_syscall();
 
 
     return 0;
