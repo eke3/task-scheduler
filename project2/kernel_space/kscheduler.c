@@ -7,7 +7,11 @@
 #include <linux/mutex.h>
 #include <linux/slab.h>
 #include <linux/delay.h>
+#include <linux/kthread.h>
 #include "kqueue.h"
+#include "kutils.h"
+
+#define NUM_CONSUMERS 5
 
 extern struct mutex pqueues_lock;
 extern struct mutex resources_lock;
@@ -15,6 +19,8 @@ extern struct mutex waiting_queue_lock;
 extern resource_queue_t* resources;
 extern priority_queues_t* pqueues;
 extern task_queue_t* waiting_queue;
+
+static struct task_struct* thread_pool[NUM_CONSUMERS];
 
 void execute_task(task_t* task) {
     // Mimic task execution by sleeping for its duration.
@@ -94,7 +100,7 @@ int process_waiting_queue() {
 
 
 
-void run_schedule_tasks() {
+int THREAD_schedule_tasks(void* arg) {
     int stop_scheduler = 0;
     while (are_there_any_uncompleted_tasks_left() || are_there_any_waiting_tasks_left()) {
         mutex_lock(&pqueues_lock);
@@ -117,5 +123,17 @@ void run_schedule_tasks() {
             break;
         }
         mutex_unlock(&waiting_queue_lock);
+    }
+    return 0;
+}
+
+void start_scheduler() {
+    int i, j;
+    for (i = 0; i < NUM_CONSUMERS; i++) {
+        thread_pool[i] = kthread_run(THREAD_schedule_tasks, NULL, "thread #%d", i+1);
+    }
+
+    for (j = 0; j < NUM_CONSUMERS; j++) {
+        kthread_stop(thread_pool[i]);
     }
 }
