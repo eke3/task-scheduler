@@ -3,8 +3,8 @@
 // Date:    03/19/2025
 // Desc:    This file contains the main function for simulating the scheduler environment.
 
-#define NUM_RESOURCES 10 // Number of resources to make available to the scheduler.
-#define NUM_TASKS 10 // Number of tasks to generate and schedule.
+#define NUM_RESOURCES 20 // Number of resources to make available to the scheduler.
+#define NUM_TASKS 50 // Number of tasks to generate and schedule.
 
 #include <pthread.h>
 #include <stdio.h>
@@ -21,7 +21,7 @@ extern priority_queues_t* pqueues;
 extern task_queue_t* waiting_queue;
 extern resource_queue_t* resources;
 
-pthread_t thread_pool[9]; // Pool of threads for generating and scheduling tasks.
+pthread_t thread_pool[10]; // Pool of threads for generating and scheduling tasks.
 
 // void add_resources()
 // Description: Populates the resource queue in the scheduler environment.
@@ -52,20 +52,20 @@ int main() {
     print_rqueue(resources);
 
     // Create 3 threads to generate tasks and 6 threads to schedule tasks.
-    for (int i = 0, j = 3; i < 3; i++, j++) {
+    for (int i = 0, j = 3; i < 5; i++, j++) {
         pthread_create(&thread_pool[i], NULL, THREAD_generate_tasks, NULL);
         // pthread_create(&thread_pool[j], NULL, THREAD_schedule_tasks, NULL);
         // pthread_create(&thread_pool[j + 3], NULL, THREAD_schedule_tasks, NULL);
     }
 sleep(1);
-    for (int i = 0, j = 3; i < 3; i++, j++) {
+    for (int i = 0, j = 5; i < 5; i++, j++) {
         // pthread_create(&thread_pool[i], NULL, THREAD_generate_tasks, NULL);
         pthread_create(&thread_pool[j], NULL, THREAD_schedule_tasks, NULL);
         // pthread_create(&thread_pool[j + 3], NULL, THREAD_schedule_tasks, NULL);
     }
 
     // Wait for all threads to finish.
-    for (int i = 0, j = 3; i < 3; i++, j++) {
+    for (int i = 0, j = 5; i < 5; i++, j++) {
         pthread_join(thread_pool[i], NULL);
         pthread_join(thread_pool[j], NULL);
         // pthread_join(thread_pool[j + 3], NULL);
@@ -105,9 +105,9 @@ void* THREAD_generate_tasks(void* arg) {
         // Resources and quantities required for a task. ( [resource_id, quantity, resource_id, quantity, ...] )
         int* resource_array = malloc(4 * sizeof(int));
         resource_array[0] = (rand() % 9) + 1;
-        resource_array[1] = (rand() % (max_rsrc - min_rsrc + 1)) + min_rsrc;
+        resource_array[1] = 1; //(rand() % (max_rsrc - min_rsrc + 1)) + min_rsrc;
         resource_array[2] = resource_array[0] + 1; // Make sure the second resource is different from the first.
-        resource_array[3] = (rand() % (max_rsrc - min_rsrc + 1)) + min_rsrc;
+        resource_array[3] = 1; //(rand() % (max_rsrc - min_rsrc + 1)) + min_rsrc;
 
         task_t* task = create_task(task_id, priority, task_duration, resource_array, 2);
         pthread_mutex_lock(&pqueues_lock);
