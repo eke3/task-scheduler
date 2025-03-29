@@ -1,6 +1,7 @@
 // #include "../kernel_space/kenvironment.h"
 // #include "../kernel_space/kscheduler.h"
 
+
 #include <stdio.h>
 #include <stdlib.h>
 #include <unistd.h>
@@ -9,6 +10,7 @@
 #include <linux/kernel.h>
 #include <sys/syscall.h>
 #include "../kernel_space/ktask_priority.h"
+
 
 #define __NR_add_task 548
 #define __NR_schedule_tasks 549
@@ -20,128 +22,108 @@
 #define __NR_add_resource 555
 
 
+
+
 long add_task_syscall(int tid, task_priority_t priority, int duration, int* resources, size_t num_resources) {
-    return syscall(__NR_add_task, tid, priority, duration, resources, num_resources);
+   return syscall(__NR_add_task, tid, priority, duration, resources, num_resources);
 }
+
 
 long schedule_tasks_syscall() {
-    return syscall(__NR_schedule_tasks);
+   return syscall(__NR_schedule_tasks);
 }
+
 
 long set_up_scheduler_syscall() {
-    return syscall(__NR_set_up_scheduler);
-}  
+   return syscall(__NR_set_up_scheduler);
+} 
+
 
 long tear_down_scheduler_syscall() {
-    return syscall(__NR_tear_down_scheduler);
+   return syscall(__NR_tear_down_scheduler);
 }
+
 
 long print_pqueues_syscall() {
-    return syscall(__NR_print_pqueues);
+   return syscall(__NR_print_pqueues);
 }
+
 
 long print_wqueue_syscall() {
-    return syscall(__NR_print_wqueue);
+   return syscall(__NR_print_wqueue);
 }
+
 
 long print_rqueue_syscall() {
-    return syscall(__NR_print_rqueue);
+   return syscall(__NR_print_rqueue);
 }
+
 
 long add_resource_syscall(int rid, int quantity) {
-    return syscall(__NR_add_resource, rid, quantity);
+   return syscall(__NR_add_resource, rid, quantity);
 }
+
 
 void add_resources() {
-    for (int i = 1; i <= 10; i++) {
-        add_resource_syscall(i,i);
-    }
+   for (int i = 1; i <= 10; i++) {
+       add_resource_syscall(i,i+1);
+   }
 }
+
 
 void add_tasks() {
-    int min_rsrc = 0; // Minimum number of a resource needed to run a task.
-    int max_rsrc = 5; // Maximum number of a resource needed to run a task.
-    task_priority_t min_priority = LOW;
-    task_priority_t max_priority = HIGH;
+   int min_rsrc = 0; // Minimum number of a resource needed to run a task.
+   int max_rsrc = 2; // Maximum number of a resource needed to run a task.
+   task_priority_t min_priority = LOW;
+   task_priority_t max_priority = HIGH;
 
-    // Create NUM_TASKS tasks and inject them into the scheduler.
-    for (int i = 1; i <= 10; i++) {
 
-        int task_id = rand();
-        task_priority_t priority = (task_priority_t)(rand() % (max_priority - min_priority + 1)) + min_priority;
-        int task_duration = 1;// (rand() % 3) + 1; // Task duration between 1 and 3 seconds.
+   // Create NUM_TASKS tasks and inject them into the scheduler.
+   for (int i = 1; i <= 30; i++) {
 
-        // Resources and quantities required for a task. ( [resource_id, quantity, resource_id, quantity, ...] )
-        int* resource_array = malloc(4 * sizeof(int));
-        resource_array[0] = (rand() % 9) + 1;
-        resource_array[1] = (rand() % (max_rsrc - min_rsrc + 1)) + min_rsrc;
-        resource_array[2] = resource_array[0] + 1; // Make sure the second resource is different from the first.
-        resource_array[3] = (rand() % (max_rsrc - min_rsrc + 1)) + min_rsrc;
-        size_t num_resources = 2;
-        add_task_syscall(task_id,priority, task_duration, resource_array, num_resources);
-    }  
+
+       int task_id = rand();
+       task_priority_t priority = (task_priority_t)(rand() % (max_priority - min_priority + 1)) + min_priority;
+       int task_duration = 1000;// (rand() % 3) + 1; // Task duration between 1 and 3 seconds.
+
+
+       // Resources and quantities required for a task. ( [resource_id, quantity, resource_id, quantity, ...] )
+       int* resource_array = malloc(4 * sizeof(int));
+       resource_array[0] = (rand() % 9) + 1;
+       resource_array[1] = (rand() % (max_rsrc - min_rsrc + 1)) + min_rsrc;
+       resource_array[2] = resource_array[0] + 1; // Make sure the second resource is different from the first.
+       resource_array[3] = (rand() % (max_rsrc - min_rsrc + 1)) + min_rsrc;
+       size_t num_resources = 2;
+       add_task_syscall(task_id,priority, task_duration, resource_array, num_resources);
+   } 
 }
 
-void test_sys_add_task(void);
-void test_sys_schedule_tasks(void);
 
 int main() {
 
-    set_up_scheduler_syscall();
-    add_resources();
-    add_tasks();
-    print_pqueues_syscall();
-    print_wqueue_syscall();
-    print_rqueue_syscall();
-    // schedule_tasks_syscall();
-    // print_pqueues_syscall();
-    // print_wqueue_syscall();
-    // print_rqueue_syscall();
-    tear_down_scheduler_syscall();
+
+   set_up_scheduler_syscall();
+   add_resources();
+   add_tasks();
+   print_pqueues_syscall();
+   print_wqueue_syscall();
+   print_rqueue_syscall();
+   schedule_tasks_syscall();
+   print_pqueues_syscall();
+   print_wqueue_syscall();
+   print_rqueue_syscall();
+   tear_down_scheduler_syscall();
 
 
-    return 0;
+
+
+   return 0;
 }
 
-void test_sys_add_task() {
-    set_up_scheduler_syscall();
-
-    int tid = 420;
-    task_priority_t priority = HIGH;
-    int duration = 1;
-    int* resources = calloc(2,sizeof(int));
-    resources[0] = 2;
-    resources[1] = 5;
-    size_t num_resources = 1;
-    add_resource_syscall(1,1);
-    print_rqueue_syscall();
-    add_task_syscall(tid,priority, duration, resources, num_resources);
-    print_pqueues_syscall();
-
-    add_resource_syscall(2,2);
-    schedule_tasks_syscall();
-    print_pqueues_syscall();
-    print_wqueue_syscall();
-    print_rqueue_syscall();
 
 
-    tear_down_scheduler_syscall();
-}
 
-void test_sys_acquire_resources() {
-    // set_up();
 
-    // tear_down();
-}
 
-void test_sys_release_resources() {
-    // set_up();
 
-    // tear_down();
-}
 
-void test_sys_schedule_tasks() {
-    // set_up();
-
-    // tear_down();
-}

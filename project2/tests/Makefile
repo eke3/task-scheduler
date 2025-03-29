@@ -1,1 +1,12 @@
-gcc -o kernel_tests kernel_tests.c kernel_space/*.c -Ikernel_space
+CC = gcc
+
+
+kernel_tests:
+   $(CC) -o kernel_tests kernel_tests.c
+
+
+
+
+
+
+
