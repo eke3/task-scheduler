@@ -1,9 +1,9 @@
 #ifndef KSCHEDULER_H
 #define KSCHEDULER_H
 
-#include "kqueue.h"
-
 #define TASK_OLD_AGE 100
+
+#include "kutils.h"
 
 // void execute_task(task_t* task)
 // Description: Executes a task.
@@ -31,8 +31,6 @@ extern int process_waiting_queue(void);
 // Preconditions: The environment is set up.
 // Postconditions: Queued tasks are scheduled and run according to their priority.
 // Returns: None.
-extern int THREAD_schedule_tasks(void* arg);
-
-extern void start_scheduler(void);
+extern void run_schedule_tasks(void);
 
 #endif
