@@ -83,9 +83,9 @@ int can_acquire_resources(task_t* task) {
                 if ((resource = find_resource_id(resources, rid)) != NULL) {
                     printk(KERN_INFO "can_acquire_resources(): Found resource %d\n", rid);
                     num_available = resource->quantity;
-                    if (num_available > num_needed) {
+                    if (num_available < num_needed) {
                         // Not enough of some resource
-                        printk(KERN_INFO "can_acquire_resources(): Not enough of resource %d\n", rid);
+                        printk(KERN_INFO "can_acquire_resources(): Not enough (%d) of resource %d, neeeded %d\n", num_available, rid, num_needed);
                         can_acquire_success = -1;
                         break;
                     }
@@ -110,7 +110,7 @@ void print_rqueue(resource_queue_t* rqueue) {
         printk(KERN_INFO "Printing resource queue...\n{\n");
         while (curr != NULL) {
             int quantity;
-            quantity = curr->sem.count;
+            quantity = curr->quantity;
             printk(KERN_INFO "\tResource ID: %d\tQuantity: %d\n", curr->rid, quantity);
             curr = curr->next;
         }

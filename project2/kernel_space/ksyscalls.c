@@ -1,5 +1,7 @@
 #include "kutils.h"
 #include "kscheduler.h"
+#include "kresource.h"
+#include "kqueue.h"
 
 #include <linux/uaccess.h>
 #include <linux/syscalls.h>
@@ -22,6 +24,12 @@ SYSCALL_DEFINE5(add_task, int, tid, task_priority_t, priority, int, duration, in
 
     to_pqueues(task);
 
+    return 0;
+}
+
+SYSCALL_DEFINE2(add_resource, int, rid, int, quantity) {
+    printk(KERN_INFO "Syscall Adding resource %d with quantity %d\n", rid, quantity);
+    enqueue_resource(resources, create_resource(rid, quantity));
     return 0;
 }
 

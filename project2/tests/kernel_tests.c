@@ -49,7 +49,7 @@ long print_rqueue_syscall() {
 }
 
 long add_resource_syscall(int rid, int quantity) {
-    return syscall(__NR_add_resource);
+    return syscall(__NR_add_resource, rid, quantity);
 }
 
 void test_sys_add_task(void);
@@ -71,15 +71,18 @@ void test_sys_add_task() {
     task_priority_t priority = HIGH;
     int duration = 1;
     int* resources = calloc(2,sizeof(int));
-    resources[0] = 1;
-    resources[1] = 1;
+    resources[0] = 2;
+    resources[1] = 5;
     size_t num_resources = 1;
+    add_resource_syscall(1,1);
+    print_rqueue_syscall();
     add_task_syscall(tid,priority, duration, resources, num_resources);
     print_pqueues_syscall();
+
+    add_resource_syscall(2,2);
     schedule_tasks_syscall();
     print_pqueues_syscall();
     print_wqueue_syscall();
-    add_resource_syscall(1,1);
     print_rqueue_syscall();
 
 

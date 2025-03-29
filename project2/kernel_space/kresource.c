@@ -4,6 +4,7 @@
 #include <linux/kernel.h>
 
 resource_t* create_resource(int rid, int quantity) {
+    printk(KERN_INFO "create_resource(): Creating resource %d with quantity %d...\n", rid, quantity);
     resource_t* resource;
 
     if (rid <= 0 || quantity < 0) {
@@ -20,6 +21,8 @@ resource_t* create_resource(int rid, int quantity) {
     resource->rid = rid;
     sema_init(&resource->sem, quantity);
     resource->quantity = quantity;
+    printk(KERN_INFO "create_resource(): Resource %d quantity set to %d\n", rid, resource->quantity);
     resource->next = NULL;
+    printk(KERN_INFO "create_resource(): Resource %d created %ssuccessfully.\n", rid, (resource == NULL) ? "un" : "");
     return resource;
 }
