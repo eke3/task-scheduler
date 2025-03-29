@@ -94,12 +94,12 @@ void enqueue_task(task_queue_t* tqueue, task_t* task) {
             free(task);
             return;
         }
-        if (find_task_id(tqueue, task->tid) != NULL) {
-            // Task already exists, reject insertion.
-            free(task->resources);
-            free(task);
-            return;
-        }
+        // if (find_task_id(tqueue, task->tid) != NULL) {
+        //     // Task already exists, reject insertion.
+        //     free(task->resources);
+        //     free(task);
+        //     return;
+        // }
         if (tqueue->head == NULL) {
             tqueue->head = task;
             tqueue->tail = task;
@@ -139,7 +139,7 @@ void free_task_queue(task_queue_t* tqueue) {
     if (tqueue) {
         task_t* task = NULL;
         while ((task = dequeue_task(tqueue)) != NULL) {
-            if (task->resources) {
+            if (task->resources != NULL) {
                 free(task->resources);
             }
             free(task);

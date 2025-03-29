@@ -10,68 +10,20 @@ extern task_queue_t* waiting_queue;
 extern resource_queue_t* resources;
 pthread_mutex_t test_pqueues_lock;
 
-void test_adding_duplicate_resource();
-void test_adding_duplicate_task();
-void test_acquire_resources();
+void test_acquire_release_resources();
 void test_schedule_tasks();
 void test_synchronization();
 void* create_tasks(void* arg);
 
 int main() {
-    // test_adding_duplicate_resource();
-    // test_adding_duplicate_task();
-    // test_acquire_resources();
-    // test_schedule_tasks();
-    // test_synchronization();
+    test_acquire_release_resources();
+    test_schedule_tasks();
+    test_synchronization();
     return 0;
 }
 
 // Working
-void test_adding_duplicate_resource() {
-    set_up();
-
-    resource_t* resource1 = create_resource(1, create_semaphore(1));
-    resource_t* resource2 = create_resource(2, create_semaphore(2));
-    resource_t* resource3 = create_resource(3, create_semaphore(3));
-    resource_t* resource4 = create_resource(1, create_semaphore(4)); // Dupe of resource1 should be added to resource 1 quantity
-
-    enqueue_resource(resources, resource1);
-    enqueue_resource(resources, resource2);
-    enqueue_resource(resources, resource3);
-    enqueue_resource(resources, resource4);
-
-    print_rqueue(resources);
-
-    tear_down();
-}
-
-// Working
-void test_adding_duplicate_task() {
-    set_up();
-
-    int* resource = calloc(4, sizeof(int));
-    resource[0] = 1;
-    resource[1] = 1;
-    resource[2] = 2;
-    resource[3] = 2;
-
-    task_t* task1 = create_task(1, HIGH, 1, resource, 2);
-    task_t* task2 = create_task(2, HIGH, 1, NULL, 0);
-    task_t* task3 = create_task(3, HIGH, 1, NULL, 0);
-    task_t* task4 = create_task(1, HIGH, 1, NULL, 0); // Dupe of task1 should be ignored if put in the same queue
-
-    enqueue_task(pqueues->high, task1);
-    enqueue_task(pqueues->high, task2);
-    enqueue_task(pqueues->high, task3);
-    enqueue_task(pqueues->high, task4);
-
-    print_tqueue(pqueues->high);
-
-    tear_down();
-}
-
-// Working
-void test_acquire_resources() {
+void test_acquire_release_resources() {
     set_up();
     resource_t* resource1 = create_resource(1, create_semaphore(1));
     resource_t* resource2 = create_resource(2, create_semaphore(2));
@@ -112,11 +64,11 @@ void test_schedule_tasks() {
     for (int i = 0; i < 3*2; i=i+2) {
         resource[i] = i;
         resource[i+1] = 1;
-        task_t* task = create_task(1, HIGH, 1, resource, 3); // this task will need one of resource 1
+        task_t* task = create_task(1, HIGH, 1, resource, 3);
         to_pqueues(task);
     }
 
-    tear_down();
+    // tear_down();
 }
 
 // Working

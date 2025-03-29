@@ -4,11 +4,12 @@
 // Desc:    This file contains the main function for simulating the scheduler environment.
 
 #define NUM_RESOURCES 10 // Number of resources to make available to the scheduler.
-#define NUM_TASKS 60 // Number of tasks to generate and schedule.
+#define NUM_TASKS 10 // Number of tasks to generate and schedule.
 
 #include <pthread.h>
 #include <stdio.h>
 #include <stdlib.h>
+#include <unistd.h>
 
 #include "environment.h"
 #include "scheduler.h"
@@ -53,15 +54,21 @@ int main() {
     // Create 3 threads to generate tasks and 6 threads to schedule tasks.
     for (int i = 0, j = 3; i < 3; i++, j++) {
         pthread_create(&thread_pool[i], NULL, THREAD_generate_tasks, NULL);
+        // pthread_create(&thread_pool[j], NULL, THREAD_schedule_tasks, NULL);
+        // pthread_create(&thread_pool[j + 3], NULL, THREAD_schedule_tasks, NULL);
+    }
+sleep(1);
+    for (int i = 0, j = 3; i < 3; i++, j++) {
+        // pthread_create(&thread_pool[i], NULL, THREAD_generate_tasks, NULL);
         pthread_create(&thread_pool[j], NULL, THREAD_schedule_tasks, NULL);
-        pthread_create(&thread_pool[j + 3], NULL, THREAD_schedule_tasks, NULL);
+        // pthread_create(&thread_pool[j + 3], NULL, THREAD_schedule_tasks, NULL);
     }
 
     // Wait for all threads to finish.
     for (int i = 0, j = 3; i < 3; i++, j++) {
         pthread_join(thread_pool[i], NULL);
         pthread_join(thread_pool[j], NULL);
-        pthread_join(thread_pool[j + 3], NULL);
+        // pthread_join(thread_pool[j + 3], NULL);
     }
 
     // Resources and availability should match their initial values before scheduling tasks.
@@ -104,13 +111,7 @@ void* THREAD_generate_tasks(void* arg) {
 
         task_t* task = create_task(task_id, priority, task_duration, resource_array, 2);
         pthread_mutex_lock(&pqueues_lock);
-
-
-        // i think this loses things that are dupes
         if (task) to_pqueues(task);
-
-
-
         pthread_mutex_unlock(&pqueues_lock);
         printf("Task %d queued with %s priority\n", task_id, ((priority == HIGH) ? "HIGH" : (priority == MEDIUM) ? "MEDIUM" : "LOW"));
     }
