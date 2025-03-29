@@ -20,7 +20,7 @@ extern resource_queue_t* resources;
 extern priority_queues_t* pqueues;
 extern task_queue_t* waiting_queue;
 
-static struct task_struct* thread_pool[NUM_CONSUMERS];
+struct task_struct* thread_pool[NUM_CONSUMERS];
 
 void execute_task(task_t* task) {
     // Mimic task execution by sleeping for its duration.
@@ -128,12 +128,17 @@ int THREAD_schedule_tasks(void* arg) {
 }
 
 void start_scheduler() {
-    int i, j;
+    int i;
+
+    // Start each consumer thread
     for (i = 0; i < NUM_CONSUMERS; i++) {
         thread_pool[i] = kthread_run(THREAD_schedule_tasks, NULL, "thread #%d", i+1);
+        
     }
 
-    for (j = 0; j < NUM_CONSUMERS; j++) {
+    // Stop each consumer thread
+    for (i = 0; i < NUM_CONSUMERS; i++) {
         kthread_stop(thread_pool[i]);
     }
 }
+

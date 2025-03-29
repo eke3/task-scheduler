@@ -51,8 +51,8 @@ long add_resource_syscall(int rid, int quantity) {
     return syscall(__NR_add_resource, rid, quantity);
 }
 
-int generate_tasks(void* arg) {
-    for (int i = 0; i < 3; i++) {
+void generate_tasks() {
+    for (int i = 0; i < 10; i++) {
         int tid = rand();
         task_priority_t priority = (task_priority_t)(rand() % 3 + 1);
         int duration = (rand() % 3 + 1);
@@ -77,14 +77,13 @@ void test_sys_add_task(void);
 void test_sys_schedule_tasks(void);
 
 int main() {
-    thread_pool = (struct task_struct*)malloc(sizeof(struct task_struct) * 10);
-
     set_up_scheduler_syscall();
     generate_resources();
 
-    for (int i = 0; i < 3; i++) {
-        generate_tasks(NULL);
-    }
+    generate_tasks();
+
+    schedule_tasks_syscall();
+    
 
 
     // for (int i = 0; i < 3; i++) {
@@ -96,7 +95,7 @@ int main() {
     // }
 
     print_pqueues_syscall();
-    printf("Waiting queue:\n");
+    // printf("Waiting queue:\n");
     print_wqueue_syscall();
     print_rqueue_syscall();
 
