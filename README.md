@@ -1,22 +1,16 @@
-# CMSC 421 Project 2
+# User-space and Kernel-space Task Schedulers
 
 ## Introduction
 **Platforms** - Linux
 
-This project focused on synchronization using mutexes and semaphores, in a multithreaded scheduling environment. It consists of a user space scheduler, which interfaces with a kernel space scheduler via syscalls, and a kernel space scheduler, which manages tasks and resources. The primary goals of this project include implementing a simulation for task scheduling and handling task creation and management.
+This project focused on synchronization using mutexes and semaphores in a multithreaded scheduling environment. It consists of a user space scheduler, which interfaces with a kernel space scheduler via syscalls, and a kernel space scheduler, which manages tasks and resources. The primary goals of this project include implementing a simulation for task scheduling and handling task creation and management.
 
 ### Features
 * Adds tasks and resources to a scheduler environment
 * Acquires and releases resources to execute tasks
 * Uses multithreading to handle tasks and resources concurrently
-
-**Extra Credit Features**
 * Aging policy that increases the priority of tasks that have been waiting for a while
 
-## Contact
-* **Contributor** - Eric Ekey
-* **Student ID** - XR06051
-* **Email** - eekey1@umbc.edu
 
 ## Installation and Setup
 ### Setup
